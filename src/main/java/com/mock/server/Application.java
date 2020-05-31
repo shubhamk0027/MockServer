@@ -10,12 +10,12 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class MockServerApplication {
+public class Application {
 
     MockServer mockServer;
-    private static final Logger logger = LoggerFactory.getLogger(MockServerApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
-    MockServerApplication(MockServer mockServer){
+    Application(MockServer mockServer){
         this.mockServer=mockServer;
     }
 
@@ -27,7 +27,7 @@ public class MockServerApplication {
 
 
     public static void main(String[] args) {
-        SpringApplication.run(MockServerApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 
     @Bean
@@ -43,25 +43,39 @@ public class MockServerApplication {
                     .respondWith(
                             new MockResponse()
                                     .withBody(
-                                            new JSONObject("{\"name\":\"John\",\"Home\":\"London\",\"Marital Status\":\"Developer\"}"))
+                                            new JSONObject("{\"Info\":\"Simple Post Request\"}"))
                                     .withStatus(200)
                                     .withHeader("browser","mozilla")
             );
             mockQuery.log();
             mockServer.addMockQuery(mockQuery);
 
-
             mockQuery = new MockQuery().inCase(
                     new MockRequest()
-                            .hasPath("/products/[a-b]/")
+                            .hasPath("/products/[a-zA-Z]+/")
                             .hasMethod(Method.POST)
                             .hasBody( new JSONObject("{\"city\":\"chicago\",\"name\":\"jon doe\",\"age\":\"22\"}")))
                     .respondWith(
                             new MockResponse()
                                     .withBody(
-                                            new JSONObject("{\"Info\":\"this one is on a regex path!\"}"))
+                                            new JSONObject("{\"Info\":\"Post request with regex returning two headers\"}"))
                                     .withStatus(200)
                                     .withHeader("browser","chrome")
+                                    .withHeader("at","night")
+                    );
+            mockQuery.log();
+            mockServer.addMockQuery(mockQuery);
+
+            mockQuery = new MockQuery().inCase(
+                    new MockRequest()
+                            .hasPath("/products/pro[a-zA-Z]+/price")
+                            .hasMethod(Method.GET))
+                    .respondWith(
+                            new MockResponse()
+                                    .withBody(
+                                            new JSONObject("{\"Info\":\"Simple GET request with headers and regex\"}"))
+                                    .withStatus(200)
+                                    .withHeader("browser","mozilla")
                     );
             mockQuery.log();
             mockServer.addMockQuery(mockQuery);
@@ -71,18 +85,9 @@ public class MockServerApplication {
 
 }
 
-// this Response jsonBody will be converted to the string before inserting it to the redis
-// before insertion it will go through a schema check
-// these operations are not atomic,
-// it is possible that path is inserted but the json schema does not match!
-
-// jsonObject Comparator
-// Json schema and check http://jsonassert.skyscreamer.org/
-
-/**
+/*
  * body should be of Json Content Type only
  * path is relative
- * <p>
  * Need to be implemented-> Json Schema support allowed
  * Json verifier
  */

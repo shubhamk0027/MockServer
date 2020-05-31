@@ -54,28 +54,71 @@ class Servlet extends HttpServlet {
         return res;
     }
 
+
+    private void getTypeResponse(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            String method) throws Exception {
+
+        ArrayList<String> pathList = getPathList(request.getRequestURI(),method);
+        String queryParameters=  request.getQueryString();
+        if(queryParameters!=null && queryParameters.length()>1) {
+            pathList.add(queryParameters.substring(1)); // ignoring ?
+        }
+
+        logger.info("Path: "+pathList);
+        RedisValue redisValue = mockServer.getTypeResponse(pathList);
+        logger.info("Returned details: ");
+        logger.info(""+redisValue.status);
+
+        if(redisValue.resHeaders.size()>0) logger.info("Headers Returned: ");
+        for(Map.Entry<String,String> itr: redisValue.resHeaders.entrySet()){
+            response.addHeader(itr.getKey(),itr.getValue());
+            logger.info(itr.getKey()+":"+itr.getValue());
+        }
+
+        logger.info("Body: "+redisValue.resBody);
+        PrintWriter out = response.getWriter();
+        out.println(redisValue.resBody);
+    }
+
+    private void postTypeResponse(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            String method) throws Exception {
+
+        ArrayList<String> pathList = getPathList(request.getRequestURI(),method);
+        String queryParameters=  request.getQueryString();
+        if(queryParameters!=null && queryParameters.length()>1)
+            pathList.add(queryParameters.substring(1)); // ignoring ?
+
+        String body = getBody(request);
+        logger.info("Path: "+pathList);
+        logger.info("Body: "+body);
+
+        RedisValue redisValue = mockServer.postTypeResponse(pathList, new JSONObject(body));
+        logger.info("Returned details: ");
+        logger.info(""+redisValue.status);
+
+        if(redisValue.resHeaders.size()>0) logger.info("Headers Returned: ");
+        for(Map.Entry<String,String> itr: redisValue.resHeaders.entrySet()){
+            response.addHeader(itr.getKey(),itr.getValue());
+            logger.info(itr.getKey()+":"+itr.getValue());
+        }
+
+        logger.info("Body: "+redisValue.resBody);
+        PrintWriter out = response.getWriter();
+        out.println(redisValue.resBody);
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try{
-            ArrayList<String> pathList = getPathList(req.getRequestURI(),Method.GET.val);
-
-            String queryParameters=  req.getQueryString();
-            if(queryParameters!=null && queryParameters.length()>1)
-                pathList.add(queryParameters.substring(1)); // ignoring ?
-
-            String body = getBody(req);
-            logger.info("........................Servlet in Get Invoked!");
-            logger.info("Path: "+pathList);
-            RedisValue redisValue = mockServer.getResponse(pathList, new JSONObject(body));
-            resp.setStatus(redisValue.status);
-            for(Map.Entry<String,String> itr: redisValue.resHeaders.entrySet()){
-                resp.addHeader(itr.getKey(),itr.getValue());
-            }
-            PrintWriter out = resp.getWriter();
-            out.println(redisValue.resBody);
-
+            logger.info("........................Servlet in GET Invoked!");
+            getTypeResponse(req,resp,Method.GET.val);
         } catch( Exception e){
             e.getStackTrace();
+            logger.info(e.getMessage());
             resp.sendError(400,e.getMessage());
         }
     }
@@ -83,66 +126,77 @@ class Servlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try{
-            ArrayList<String> pathList = getPathList(req.getRequestURI(),Method.POST.val);
-
-            String queryParameters=  req.getQueryString();
-            if(queryParameters!=null && queryParameters.length()>1)
-                pathList.add(queryParameters.substring(1)); // ignoring ?
-
-            String body = getBody(req);
             logger.info("........................Servlet in POST Invoked!");
-            logger.info("Path: "+pathList);
-            logger.info("Body: "+body);
-
-            RedisValue redisValue = mockServer.getResponse(pathList, new JSONObject(body));
-            logger.info("Retuned details: ");
-            logger.info(""+redisValue.status);
-
-            if(redisValue.resHeaders.size()>0) logger.info("Headers Returned: ");
-            for(Map.Entry<String,String> itr: redisValue.resHeaders.entrySet()){
-                resp.addHeader(itr.getKey(),itr.getValue());
-                logger.info(itr.getKey()+":"+itr.getValue());
-            }
-
-            logger.info("Body: "+redisValue.resBody);
-            PrintWriter out = resp.getWriter();
-            out.println(redisValue.resBody);
-
+            postTypeResponse(req,resp,Method.POST.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
             resp.sendError(400,e.getMessage());
         }
-
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPut(req, resp);
+        try{
+            logger.info("........................Servlet in PUT Invoked!");
+            postTypeResponse(req,resp,Method.PUT.val);
+        } catch( Exception e){
+            e.getStackTrace();
+            logger.info(e.getMessage());
+            resp.sendError(400,e.getMessage());
+        }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
+        try{
+            logger.info("........................Servlet in DEL Invoked!");
+            postTypeResponse(req,resp,Method.DEL.val);
+        } catch( Exception e){
+            e.getStackTrace();
+            logger.info(e.getMessage());
+            resp.sendError(400,e.getMessage());
+        }
     }
 
     @Override
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doHead(req, resp);
+        try{
+            logger.info("........................Servlet in HEAD Invoked!");
+            getTypeResponse(req,resp,Method.HEAD.val);
+        } catch( Exception e){
+            e.getStackTrace();
+            logger.info(e.getMessage());
+            resp.sendError(400,e.getMessage());
+        }
     }
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doOptions(req, resp);
+        try{
+            logger.info("........................Servlet in OPTIONS Invoked!");
+            getTypeResponse(req,resp,Method.OPTIONS.val);
+        } catch( Exception e){
+            e.getStackTrace();
+            logger.info(e.getMessage());
+            resp.sendError(400,e.getMessage());
+        }
     }
 
     @Override
     protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doTrace(req, resp);
+        try{
+            logger.info("........................Servlet in TRACE Invoked!");
+            getTypeResponse(req,resp,Method.TRACE.val);
+        } catch( Exception e){
+            e.getStackTrace();
+            logger.info(e.getMessage());
+            resp.sendError(400,e.getMessage());
+        }
     }
 
 }
 
-/**
+/*
  * https://tomcat.apache.org/tomcat-5.5-doc/servletapi/javax/servlet/http/HttpServlet.html
  */

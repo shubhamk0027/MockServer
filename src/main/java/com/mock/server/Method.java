@@ -15,7 +15,6 @@ public enum Method {
         TRACE("TRACE");
 
         public String val;
-
         Method (String val) { this.val= val; }
 }
 

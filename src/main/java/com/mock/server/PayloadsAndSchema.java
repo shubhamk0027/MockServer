@@ -2,8 +2,11 @@ package com.mock.server;
 
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
+
+// https://www.baeldung.com/java-org-json
+// this feature is only for post and put method
+// for the rest it will be ignored!
 
 @Component
 public class PayloadsAndSchema {

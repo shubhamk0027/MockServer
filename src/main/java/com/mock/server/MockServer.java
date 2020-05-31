@@ -22,8 +22,8 @@ public class MockServer {
     private final Verifier verifier;
     private final PayloadsAndSchema payloadsAndSchema;
 
-    // Index of the payload list where the response can be
-    private Integer counter;
+    private Integer getTypeCounter;
+    private Integer postTypeCounter;
 
     private MockServer(
             RedisClient redisClient,
@@ -35,13 +35,12 @@ public class MockServer {
         this.verifier=verifier;
         this.payloadsAndSchema=payloadsAndSchema;
 
-        counter = 0;
-        // load values from some db/logger
-        // loading the counter from redis
-        // counter= redisClient.getCounter();
+        getTypeCounter = 0;
+        postTypeCounter = 0;
+
     }
 
-
+    // Make this operation atomic
     public void addMockQuery(MockQuery mockQuery) throws JsonProcessingException {
         logger.info("...............................");
         logger.info("Adding to the URI tree");
@@ -60,9 +59,20 @@ public class MockServer {
                 mockQuery.getMockRequest().getQueryParametersRegex()
         );
 
-        TreeNode trav = root;
+        if(mockQuery.getMockRequest().getMethod()==Method.POST ||
+                mockQuery.getMockRequest().getMethod()==Method.PUT ||
+                    mockQuery.getMockRequest().getMethod()==Method.DEL) {
+            addPostTypeMockQuery(pathList,mockQuery);
+        } else {
+            addGetTypeMockQuery(pathList,mockQuery);
+        }
 
-        // Make this operation atomic
+    }
+
+    // Queries with a request body
+    private void addPostTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
+
+        TreeNode trav = root;
         for(Directory dir : pathList) {
             if(!trav.getChildren().containsKey(dir.getDirName()))
                 trav.addChild(dir.getDirName(), new TreeNode(dir));
@@ -72,8 +82,8 @@ public class MockServer {
         if(trav.getId() == -1) {
             synchronized (trav) {
                 if(trav.getId() == -1) {
-                    counter++;
-                    trav.setId(counter); // setId(int)
+                    postTypeCounter++;
+                    trav.setId(postTypeCounter); // setId(int)
                 }
             }
         }
@@ -84,7 +94,7 @@ public class MockServer {
                 mockQuery.getMockRequest().getJsonBody()
         );
 
-        String key = Integer.toString(redisKey);
+        String key = "P"+redisKey;
         // Add the value to redis after serialization
         RedisValue redisValue = new RedisValue(mockQuery.getMockResponse());
         String value = mapper.writeValueAsString(redisValue);
@@ -97,6 +107,99 @@ public class MockServer {
         value = redisClient.getVal(key);
         logger.info("Added to Redis: "+key+" : "+ value);
     }
+
+    // Queries with a request body
+    private void addGetTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
+
+        TreeNode trav = root;
+        for(Directory dir : pathList) {
+            if(!trav.getChildren().containsKey(dir.getDirName()))
+                trav.addChild(dir.getDirName(), new TreeNode(dir));
+            trav = trav.getChildren().get(dir.getDirName());
+        }
+
+        if(trav.getId() == -1) {
+            synchronized (trav) {
+                if(trav.getId() == -1) {
+                    getTypeCounter++;
+                    trav.setId(getTypeCounter); // setId(int)
+                }
+            }
+        }
+
+        String key = "G"+trav.getId();
+        // Add the value to redis after serialization
+        RedisValue redisValue = new RedisValue(mockQuery.getMockResponse());
+        String value = mapper.writeValueAsString(redisValue);
+
+        logger.info("Key: "+key);
+        logger.info("Val: "+value);
+
+        redisClient.addVal(key,value);
+
+        value = redisClient.getVal(key);
+        logger.info("Added to Redis: "+key+" : "+ value);
+    }
+
+
+    private TreeNode find(TreeNode trav, ArrayList <String> pathList, int id) {
+        for(Map.Entry <String, TreeNode> itr : trav.getChildren().entrySet()) {
+            if(itr.getValue().matches(pathList.get(id))) {
+                if(id == pathList.size() - 1) {
+                    logger.info(itr.getKey()+" matched "+pathList.get(id));
+                    return itr.getValue();
+                }
+                TreeNode res = find(itr.getValue(), pathList, id + 1);
+                if(res != null) return res;
+            }else{
+                logger.info(itr.getValue().getName()+" does not matched "+pathList.get(id));
+            }
+        }
+        return null;
+    }
+
+    // payloads and schema check
+    public RedisValue postTypeResponse(ArrayList<String> pathList, JSONObject jsonObject) throws Exception {
+        logger.info("........................");
+        logger.info("Matching Process Started");
+
+        TreeNode sol = find(root, pathList, 0);
+        if(sol == null) {
+            throw new Exception("Directory matching the path does not exists!");
+        }
+
+        if(sol.getId() == -1) throw new Exception("Path does not exists!");
+
+        // check if there exists such a payload
+        int at = payloadsAndSchema.checkPayload(sol.getId(),jsonObject);
+        // no exception => success
+        logger.info("Payload array at "+sol.getId());
+        logger.info("Payload at P"+at);
+
+        // deserialize and return
+        String res = redisClient.getVal("P"+at);
+        return mapper.readValue(res,RedisValue.class);
+    }
+
+    // no extra checks required
+    public RedisValue getTypeResponse(ArrayList<String> pathList) throws Exception {
+        logger.info("........................");
+        logger.info("Matching Process Started");
+
+        TreeNode sol = find(root, pathList, 0);
+        if(sol == null) {
+            throw new Exception("Directory matching the path does not exists!");
+        }
+
+        if(sol.getId() == -1) throw new Exception("Path does not exists!");
+
+        logger.info("Found at G"+ sol.getId());
+        String res = redisClient.getVal("G"+sol.getId());
+        return mapper.readValue(res,RedisValue.class);
+    }
+
+}
+
 
 /*
     // only * is considered a special character matching any!
@@ -120,47 +223,3 @@ public class MockServer {
         return dp[n][m];
     }
 */
-
-    private TreeNode find(TreeNode trav, ArrayList <String> pathList, int id) {
-        for(Map.Entry <String, TreeNode> itr : trav.getChildren().entrySet()) {
-            if(itr.getValue().matches(pathList.get(id))) {
-                if(id == pathList.size() - 1) {
-                    logger.info(itr.getKey()+" matched "+pathList.get(id));
-                    return itr.getValue();
-                }
-                TreeNode res = find(itr.getValue(), pathList, id + 1);
-                if(res != null) return res;
-            }else{
-                logger.info(itr.getValue().getName()+" does not matched "+pathList.get(id));
-            }
-        }
-        return null;
-    }
-
-    public RedisValue getResponse(ArrayList<String> pathList, JSONObject jsonObject) throws Exception {
-        logger.info("........................");
-        logger.info("Matching Process Started");
-
-        TreeNode sol = find(root, pathList, 0);
-        if(sol == null) {
-            throw new Exception("Directory matching the path does not exists!");
-        }
-
-        if(sol.getId() == -1) throw new Exception("Path does not exists!");
-
-        // check if there exists such a payload
-        int at = payloadsAndSchema.checkPayload(sol.getId(),jsonObject);
-        // no exception => success
-        logger.info("Payload array at "+sol.getId());
-        logger.info("Payload at"+at);
-
-        // deserialize and return
-        String res = redisClient.getVal(Integer.toString(at));
-        return mapper.readValue(res,RedisValue.class);
-    }
-
-    @PreDestroy
-    public void destroy() {
-        redisClient.setCounter(counter);
-    }
-}
