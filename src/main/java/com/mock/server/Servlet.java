@@ -3,6 +3,7 @@ package com.mock.server;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
@@ -20,6 +22,7 @@ import java.util.Scanner;
  * and should support synchronization over the shared objects
  */
 
+@Service
 class Servlet extends HttpServlet {
 
     public static final Logger logger= LoggerFactory.getLogger(Servlet.class);
@@ -30,11 +33,11 @@ class Servlet extends HttpServlet {
     }
 
     private String getBody(HttpServletRequest request) throws IOException {
-        Scanner s = new Scanner(request.getInputStream(), "UTF-8").useDelimiter("\\A");
+        Scanner s = new Scanner(request.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
     }
 
-    private ArrayList<String> getPathList(String uri,String method){
+    private ArrayList<String> getSimplePathList(String uri,String method){
         ArrayList<String> res = new ArrayList <>();
         res.add(method);
         StringBuilder stringBuilder = new StringBuilder();
@@ -60,7 +63,7 @@ class Servlet extends HttpServlet {
             HttpServletResponse response,
             String method) throws Exception {
 
-        ArrayList<String> pathList = getPathList(request.getRequestURI(),method);
+        ArrayList<String> pathList = getSimplePathList(request.getRequestURI(),method);
         String queryParameters=  request.getQueryString();
         if(queryParameters!=null && queryParameters.length()>0) {
             pathList.add(queryParameters);
@@ -87,7 +90,7 @@ class Servlet extends HttpServlet {
             HttpServletResponse response,
             String method) throws Exception {
 
-        ArrayList<String> pathList = getPathList(request.getRequestURI(),method);
+        ArrayList<String> pathList = getSimplePathList(request.getRequestURI(),method);
         String queryParameters=  request.getQueryString();
         if(queryParameters!=null && queryParameters.length()>0)
             pathList.add(queryParameters); // ignoring ?
@@ -112,86 +115,102 @@ class Servlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try{
             logger.info("........................Servlet in GET Invoked!");
             getTypeResponse(req,resp,Method.GET.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
-            resp.sendError(400,e.getMessage());
+            PrintWriter out = resp.getWriter();
+            out.println(e.getMessage());
+            out.println(e.getLocalizedMessage());
+            resp.setStatus(400);
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
             logger.info("........................Servlet in POST Invoked!");
             postTypeResponse(req,resp,Method.POST.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
-            resp.sendError(400,e.getMessage());
+            PrintWriter out = resp.getWriter();
+            out.println(e.getMessage());
+            out.println(e.getLocalizedMessage());
+            resp.setStatus(400);
         }
     }
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try{
             logger.info("........................Servlet in PUT Invoked!");
             postTypeResponse(req,resp,Method.PUT.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
-            resp.sendError(400,e.getMessage());
+            PrintWriter out = resp.getWriter();
+            out.println(e.getMessage());
+            resp.setStatus(400);
         }
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
             logger.info("........................Servlet in DEL Invoked!");
             postTypeResponse(req,resp,Method.DEL.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
-            resp.sendError(400,e.getMessage());
+            PrintWriter out = resp.getWriter();
+            out.println(e.getMessage());
+            resp.setStatus(400);
         }
     }
 
     @Override
-    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try{
             logger.info("........................Servlet in HEAD Invoked!");
             getTypeResponse(req,resp,Method.HEAD.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
-            resp.sendError(400,e.getMessage());
+            PrintWriter out = resp.getWriter();
+            out.println(e.getMessage());
+            resp.setStatus(400);
         }
     }
 
     @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
             logger.info("........................Servlet in OPTIONS Invoked!");
             getTypeResponse(req,resp,Method.OPTIONS.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
-            resp.sendError(400,e.getMessage());
+            PrintWriter out = resp.getWriter();
+            out.println(e.getMessage());
+            resp.setStatus(400);
         }
     }
 
     @Override
-    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
             logger.info("........................Servlet in TRACE Invoked!");
             getTypeResponse(req,resp,Method.TRACE.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
-            resp.sendError(400,e.getMessage());
+            PrintWriter out = resp.getWriter();
+            out.println(e.getMessage());
+            resp.setStatus(400);
         }
     }
 

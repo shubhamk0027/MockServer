@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PreDestroy;
 import java.util.*;
 
 
@@ -69,15 +68,21 @@ public class MockServer {
 
     }
 
-    // Queries with a request body
-    private void addPostTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
 
+    private TreeNode traverse(ArrayList<Directory> pathList){
         TreeNode trav = root;
         for(Directory dir : pathList) {
             if(!trav.getChildren().containsKey(dir.getDirName()))
                 trav.addChild(dir.getDirName(), new TreeNode(dir));
             trav = trav.getChildren().get(dir.getDirName());
         }
+        return trav;
+    }
+
+    // Queries with a request body
+    private void addPostTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
+
+        TreeNode trav = traverse(pathList);
 
         if(trav.getId() == -1) {
             synchronized (trav) {
@@ -88,9 +93,9 @@ public class MockServer {
             }
         }
 
-        // count of the number of payloads
         int redisKey = payloadsAndSchema.addPayload(
                 trav.getId(),
+                mockQuery.getMockRequest().getCheckMode(),
                 mockQuery.getMockRequest().getJsonBody()
         );
 
@@ -108,15 +113,11 @@ public class MockServer {
         logger.info("Added to Redis: "+key+" : "+ value);
     }
 
+
     // Queries with a request body
     private void addGetTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
 
-        TreeNode trav = root;
-        for(Directory dir : pathList) {
-            if(!trav.getChildren().containsKey(dir.getDirName()))
-                trav.addChild(dir.getDirName(), new TreeNode(dir));
-            trav = trav.getChildren().get(dir.getDirName());
-        }
+        TreeNode trav = traverse(pathList);
 
         if(trav.getId() == -1) {
             synchronized (trav) {
@@ -146,9 +147,9 @@ public class MockServer {
         for(Map.Entry <String, TreeNode> itr : trav.getChildren().entrySet()) {
             if(itr.getValue().matches(pathList.get(id))) {
                 if(id == pathList.size() - 1) {
-                    logger.info(itr.getKey()+" matched "+pathList.get(id));
                     return itr.getValue();
                 }
+                logger.info(itr.getKey()+" matched "+pathList.get(id));
                 TreeNode res = find(itr.getValue(), pathList, id + 1);
                 if(res != null) return res;
             }else{
@@ -161,7 +162,7 @@ public class MockServer {
     // payloads and schema check
     public RedisValue postTypeResponse(ArrayList<String> pathList, JSONObject jsonObject) throws Exception {
         logger.info("........................");
-        logger.info("Matching Process Started");
+        logger.info("Post Matching Process Started");
 
         TreeNode sol = find(root, pathList, 0);
         if(sol == null) {
@@ -184,7 +185,7 @@ public class MockServer {
     // no extra checks required
     public RedisValue getTypeResponse(ArrayList<String> pathList) throws Exception {
         logger.info("........................");
-        logger.info("Matching Process Started");
+        logger.info("Get Matching Process Started");
 
         TreeNode sol = find(root, pathList, 0);
         if(sol == null) {
@@ -197,6 +198,43 @@ public class MockServer {
         String res = redisClient.getVal("G"+sol.getId());
         return mapper.readValue(res,RedisValue.class);
     }
+
+
+    public void addSchema(MockSchema mockSchema){
+        logger.info(".....................................");
+        logger.info("Adding Schema.......................");
+
+        if(mockSchema.getMethod()!=Method.POST
+                && mockSchema.getMethod()!=Method.DEL
+                && mockSchema.getMethod()!=Method.PUT )
+            throw new IllegalArgumentException(mockSchema.getMethod().val+" does not support schema checks");
+
+        if(mockSchema.getQueryParameters()!=null && mockSchema.getQueryParametersRegex()!=null)
+            throw new IllegalArgumentException("Schema can not have both simple and regex query parameters at the same time");
+
+        ArrayList <Directory> pathList = verifier.getPathList(
+                mockSchema.getMethod(),
+                mockSchema.getPath(),
+                mockSchema.getQueryParameters(),
+                mockSchema.getQueryParametersRegex()
+        );
+
+        TreeNode trav= traverse(pathList);
+
+        if(trav.getId() == -1) {
+            synchronized (trav) {
+                if(trav.getId() == -1) {
+                    postTypeCounter++;
+                    trav.setId(postTypeCounter); // setId(int)
+                }
+            }
+        }
+
+        payloadsAndSchema.addSchema(trav.getId(),mockSchema.isCheckMode(),mockSchema.getSchema());
+        logger.info("Schema Added at key val P"+trav.getId());
+
+    }
+
 
 }
 

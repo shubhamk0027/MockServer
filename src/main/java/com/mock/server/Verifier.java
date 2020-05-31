@@ -20,7 +20,7 @@ public class Verifier {
      * All valid regular expressions does not contains a forward slash
      * https://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
      */
-    public ArrayList <Directory> getPathList(
+    public  ArrayList <Directory> getPathList(
             Method method,
             String path,
             String queryParameters,
@@ -29,7 +29,7 @@ public class Verifier {
 
         if(path == null || path.length() == 0) throw new IllegalStateException("Path can not be a null or empty");
 
-        ArrayList <Directory> pathList = new ArrayList <Directory>();
+        ArrayList <Directory> pathList = new ArrayList <>();
         pathList.add(new DirName(method.val));
 
         StringBuilder dirNameBuilder = new StringBuilder();
@@ -60,15 +60,15 @@ public class Verifier {
             pathList.add(new DirPattern(query, Pattern.compile(query)));
         }
 
-        String stringPath="";
-        for(int i=0;i<pathList.size();i++) stringPath+= " "+pathList.get(i).getDirName();
-        logger.info("Path List: "+stringPath);
+        StringBuilder stringPath= new StringBuilder();
+        for(Directory directory : pathList) stringPath.append(" ").append(directory.getDirName());
+        logger.info("Path List: "+stringPath.toString());
 
         return pathList;
     }
 
 
-    private void addToPathList(String dir, ArrayList <Directory> pathList) throws IllegalStateException, PatternSyntaxException {
+    private  void addToPathList(String dir, ArrayList <Directory> pathList) throws IllegalStateException, PatternSyntaxException {
         if(dir.length() == 0) throw new IllegalStateException("Directory Name can not be empty!");
         boolean isDirString = true;
         for(int j = 0; j < dir.length(); j++) {
@@ -85,11 +85,12 @@ public class Verifier {
         }
     }
 
+
     /**
      * For methods not supporting particular members like request body for GET, the actual server will ignore them.
      */
 
-    public void verifyMethodAndQuery(Method method, JSONObject jsonBody, String queryParameters, String queryParametersRegex) {
+    public  void verifyMethodAndQuery(Method method, JSONObject jsonBody, String queryParameters, String queryParametersRegex) {
         if(queryParameters!=null && queryParametersRegex!=null)
             throw new IllegalStateException("You can not set both query Parameters and QueryParameters in Regex at the same time");
         if(method == Method.GET) {

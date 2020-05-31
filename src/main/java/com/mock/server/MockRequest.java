@@ -11,34 +11,42 @@ import org.springframework.stereotype.Component;
 
 public class MockRequest {
 
-    public static final Logger logger = LoggerFactory.getLogger(MockRequest.class);
+    public static final boolean STRICT = true;
+    public static final boolean NOT_STRICT = false;
+
+    private static final Logger logger = LoggerFactory.getLogger(MockRequest.class);
 
     private Method method;
     private String path;
     private JSONObject jsonBody;
     private String queryParameters;
     private String queryParametersRegex;
+    private boolean checkMode=NOT_STRICT;
+    // check mode will be ignored if method does not support payload
+
 
     public Method getMethod() {
         return method;
     }
-
     public JSONObject getJsonBody() {
         return jsonBody;
     }
-
     public String getQueryParameters() {
         return queryParameters;
     }
     public String getQueryParametersRegex() {
         return queryParametersRegex;
     }
-
     public String getPath() {
         return path;
     }
+    public boolean getCheckMode(){ return  checkMode; }
 
-    // verified in the MockQuery
+    public MockRequest inCheckMode(boolean checkMode){
+        this.checkMode= checkMode;
+        return this;
+    }
+
     public MockRequest hasMethod(Method method) {
         this.method = method;
         return this;

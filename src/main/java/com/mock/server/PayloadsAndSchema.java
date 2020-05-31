@@ -1,8 +1,10 @@
 package com.mock.server;
 
+import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // https://www.baeldung.com/java-org-json
 // this feature is only for post and put method
@@ -11,39 +13,43 @@ import java.util.ArrayList;
 @Component
 public class PayloadsAndSchema {
 
-    private final ArrayList<ArrayList <JSONObject>> payloads = new ArrayList<ArrayList<JSONObject>>();
-    private final ArrayList <JSONObject> schema = new ArrayList <>();
-    private int payLoadCount;
+    private final ArrayList<POSTData> postData ;
+    private final AtomicInteger payLoadCount;
 
     private PayloadsAndSchema(){
-        payLoadCount=0;
+        postData = new ArrayList <>();
+        payLoadCount= new AtomicInteger(0);
     }
 
-    public void checkSchema(int key, JSONObject object){
-        // schema check algo
+    private int getPayLoadCount(){
+        return payLoadCount.incrementAndGet();
     }
 
-    // implement schema check before adding to the payload
-    public int addPayload(int key, JSONObject object){
-        checkSchema(key,object);
-        synchronized (payloads){
-            if(key>payloads.size()){
-                payloads.add(new ArrayList <>());
+    public int addPayload(int key,boolean mode, JSONObject object){
+        synchronized (this){
+            if(key>postData.size()){
+                postData.add(new POSTData());
             }
         }
-        int ret;
-        synchronized (payloads.get(key-1)){
-            payloads.get(key-1).add(object);
-            ret = ++payLoadCount;
-        }
+        int ret=getPayLoadCount();
+        Payload payload = new Payload(ret,mode,object);
+        postData.get(key-1).addPayload(payload);
         return ret;
     }
 
-
-    public int checkPayload(int key, JSONObject object){
-        // check if there is any payload in key array matching object
-        // JSONObject with = payloads.get(id-1);
-        // return exception if is not equal!
+    public int checkPayload(int key, JSONObject object) throws Exception {
+        key = postData.get(key-1).anyMatchPayload(object);
+        if(key==-1) throw new Exception("No matching payload found!");
         return key;
     }
+
+    public void addSchema(int key, boolean mode, JSONObject object){
+        synchronized (this){
+            if(key>postData.size()){
+                postData.add(new POSTData());
+            }
+        }
+        postData.get(key-1).setSchema(SchemaLoader.load(object),mode);
+    }
+
 }

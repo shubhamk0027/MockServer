@@ -119,7 +119,7 @@ public class Application {
 /*
  * body should be of Json Content Type only
  * path is relative
- * Need to be implemented-> Json Schema support allowed
+ * Json Schema
  * Json verifier
  */
 
