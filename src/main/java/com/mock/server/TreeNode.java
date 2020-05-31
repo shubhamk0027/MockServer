@@ -1,20 +1,32 @@
 package com.mock.server;
+
 import java.util.HashMap;
 
 public class TreeNode {
-    private final String val;
-    private final HashMap <String,TreeNode> child = new HashMap <>();
-    private int id;
 
-    public TreeNode(String val){
-        this.val=val;
-        id=-1;
+    private int id;
+    private Directory directory;
+    private final HashMap <String, TreeNode> child = new HashMap <>();
+
+    public TreeNode(Directory dir) {
+        this.directory=dir;
+        id = -1;
     }
 
-    public String getVal() { return val; }
-    public HashMap<String, TreeNode> getChildren() { return child; }
-    public int getId() { return id;}
-    public void setId(int id) { this.id = id;}
-    public void addChild(String val, TreeNode node) { child.put(val,node); }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public int getId() {
+        return id;
+    }
+    public String getName() { return directory.getDirName(); }
+    public boolean matches(String s){ return directory.matches(s); }
 
+    public HashMap <String, TreeNode> getChildren() {
+        return child;
+    }
+    public void addChild(String name, TreeNode node) {
+        child.put(name, node);
+    }
 }
+

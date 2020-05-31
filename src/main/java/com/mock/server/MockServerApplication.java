@@ -1,5 +1,6 @@
 package com.mock.server;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -8,13 +9,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
-import javax.swing.plaf.basic.BasicButtonUI;
-
 @SpringBootApplication
 public class MockServerApplication {
 
     MockServer mockServer;
     private static final Logger logger = LoggerFactory.getLogger(MockServerApplication.class);
+
+    MockServerApplication(MockServer mockServer){
+        this.mockServer=mockServer;
+    }
 
     @Bean
     public ServletRegistrationBean <Servlet> servletRegistrationBean() {
@@ -22,80 +25,88 @@ public class MockServerApplication {
                 new Servlet(mockServer), "/");
     }
 
-    MockServerApplication(MockServer mockServer){
-        this.mockServer=mockServer;
-    }
 
     public static void main(String[] args) {
         SpringApplication.run(MockServerApplication.class, args);
     }
 
-    // Add (specificString/pattern) -> Specific Http Response
-    // Request -> Specific Http Response
-
     @Bean
     CommandLineRunner commandLineRunner(){
         return (args)-> {
-            // GET MockReq after parsing string
-            String json1 = "            {\n" +
-                    "                    \"path\" :\"/products/cardboard\",\n" +
-                    "                    \"method\":\"GET\",\n" +
-                    "                    \"response\":{\n" +
-                    "                        \"status\":200,\n" +
-                    "                        \"body\":\"{\\\"price\\\":100}\"\n" +
-                    "                    }\n" +
-                    "            }\n";
-            mockServer.add(json1);
+            MockQuery mockQuery;
 
-            // directly build from a mockQuery
-            mockServer.addMockQuery(
-                    new MockQuery.Builder()
-                            .setMethod(MockQuery.Method.GET)
-                            .setPath("/products/smartphones/")
-                            .setResponseBody("{\"price\":10000}")
-                            .setResponseCode(200).build()
+            mockQuery = new MockQuery().inCase(
+                    new MockRequest()
+                            .hasPath("/products/cardboard/")
+                            .hasMethod(Method.POST)
+                            .hasBody( new JSONObject("{\"city\":\"chicago\",\"name\":\"jon doe\",\"age\":\"22\"}")))
+                    .respondWith(
+                            new MockResponse()
+                                    .withBody(
+                                            new JSONObject("{\"name\":\"John\",\"Home\":\"London\",\"Marital Status\":\"Developer\"}"))
+                                    .withStatus(200)
+                                    .withHeader("browser","mozilla")
             );
+            mockQuery.log();
+            mockServer.addMockQuery(mockQuery);
 
-            mockServer.addMockQuery(
-                    new MockQuery.Builder()
-                            .setMethod(MockQuery.Method.POST)
-                            .setPath("/products/smartphones/")
-                            .setResponseBody("{\"error\":\"price not it range!\"}")
-                            .setResponseCode(200).build()
-            );
 
-            mockServer.addMockQuery(
-                    new MockQuery.Builder()
-                            .setMethod(MockQuery.Method.POST)
-                            .setPath("/products/smartphones?price=100000&color=red")
-                            .setResponseBody("{\"result\":\"success!\"}")
-                            .setResponseCode(200).build()
-            );
+            mockQuery = new MockQuery().inCase(
+                    new MockRequest()
+                            .hasPath("/products/[a-b]/")
+                            .hasMethod(Method.POST)
+                            .hasBody( new JSONObject("{\"city\":\"chicago\",\"name\":\"jon doe\",\"age\":\"22\"}")))
+                    .respondWith(
+                            new MockResponse()
+                                    .withBody(
+                                            new JSONObject("{\"Info\":\"this one is on a regex path!\"}"))
+                                    .withStatus(200)
+                                    .withHeader("browser","chrome")
+                    );
+            mockQuery.log();
+            mockServer.addMockQuery(mockQuery);
 
-            mockServer.addMockQuery(
-                    new MockQuery.Builder()
-                            .setMethod(MockQuery.Method.GET)
-                            .setPath("/products/smartphones/buy/iphone11pro")
-                            .setResponseBody("{\"note\":\"stay in your limits!\"}")
-                            .setResponseCode(200).build()
-            );
-
-            mockServer.addMockQuery(
-                    new MockQuery.Builder()
-                            .setMethod(MockQuery.Method.GET)
-                            .setPath("/products/smartphones/*")
-                            .setResponseBody("{\"price\":100000}")
-                            .setResponseCode(200).build()
-            );
-
-            mockServer.addMockQuery(
-                    new MockQuery.Builder()
-                            .setMethod(MockQuery.Method.GET)
-                            .setPath("/*/robots.txt")
-                            .setResponseBody("{\"note\":\"Robots are not allowed on out site!\"}")
-                            .setResponseCode(200).build()
-            );
         };
     }
 
 }
+
+// this Response jsonBody will be converted to the string before inserting it to the redis
+// before insertion it will go through a schema check
+// these operations are not atomic,
+// it is possible that path is inserted but the json schema does not match!
+
+// jsonObject Comparator
+// Json schema and check http://jsonassert.skyscreamer.org/
+
+/**
+ * body should be of Json Content Type only
+ * path is relative
+ * <p>
+ * Need to be implemented-> Json Schema support allowed
+ * Json verifier
+ */
+
+/*
+ * Adding a MockQuery
+ * Dev
+ *  ->MockQueryBuild (MockReq(+verification),MockResponse)
+ *      ->add to URITreeAdd
+ *          ->generateRedisKey and value(JsonBody+Response)
+ *              -> to Redis
+ *
+ * FakeServe
+ * HttpServletRequest
+ *      ->simplePathList
+ *          ->URITree match
+ *              -> Generate Redis Key
+ *                  -> get Val from redis
+ *
+ *
+ *
+ * https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpRequest.html
+ * https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpResponse.html
+ *
+ * https://tomcat.apache.org/tomcat-5.5-doc/servletapi/javax/servlet/http/HttpServletRequest.html
+ * https://tomcat.apache.org/tomcat-5.5-doc/servletapi/javax/servlet/http/HttpServletResponse.html
+ */

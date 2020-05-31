@@ -1,7 +1,7 @@
 package com.mock.server;
 
+import org.json.JSONObject;
 import org.redisson.Redisson;
-import org.redisson.RedissonBucket;
 import org.redisson.api.RBucket;
 import org.redisson.api.RList;
 import org.redisson.api.RedissonClient;
@@ -10,7 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
+// even really really long keys don't have a large impact on the speed of redis
 
 @Service
 public class RedisClient {
@@ -24,17 +27,11 @@ public class RedisClient {
         redissonClient= Redisson.create(config);
     }
 
-    public void addVal(String path, String jsonString){
-        // add the response to the list
-        RList <String> list = redissonClient.getList(path);
-        list.add(jsonString);
-    }
 
-    public String getVal(String path){
-        // send some random value from the possible list of responses
-        RList<String> list = redissonClient.getList(path);
-        if(list.size()!=0) return list.get(new Random().nextInt(list.size()));
-        throw new IllegalArgumentException("Path not found!");
+
+    public void addVal(String key, String jsonString){
+        RList <String> list = redissonClient.getList(key);
+        list.add(jsonString);
     }
 
     public int getCounter(){
@@ -47,10 +44,11 @@ public class RedisClient {
         rBucket.set(val);
     }
 
-    public void remove(String path){
-        // deletes all the responses from that path
-        RedissonBucket bucket = (RedissonBucket) redissonClient.getBucket(path);
-        bucket.delete();
+    public String getVal(String key){
+        RList<String> list = redissonClient.getList(key);
+        if(list.size()!=0) return list.get(new Random().nextInt(list.size()));
+        throw new IllegalArgumentException("Path not found!");
     }
 
 }
+
