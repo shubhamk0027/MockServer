@@ -62,8 +62,8 @@ class Servlet extends HttpServlet {
 
         ArrayList<String> pathList = getPathList(request.getRequestURI(),method);
         String queryParameters=  request.getQueryString();
-        if(queryParameters!=null && queryParameters.length()>1) {
-            pathList.add(queryParameters.substring(1)); // ignoring ?
+        if(queryParameters!=null && queryParameters.length()>0) {
+            pathList.add(queryParameters);
         }
 
         logger.info("Path: "+pathList);
@@ -89,8 +89,8 @@ class Servlet extends HttpServlet {
 
         ArrayList<String> pathList = getPathList(request.getRequestURI(),method);
         String queryParameters=  request.getQueryString();
-        if(queryParameters!=null && queryParameters.length()>1)
-            pathList.add(queryParameters.substring(1)); // ignoring ?
+        if(queryParameters!=null && queryParameters.length()>0)
+            pathList.add(queryParameters); // ignoring ?
 
         String body = getBody(request);
         logger.info("Path: "+pathList);

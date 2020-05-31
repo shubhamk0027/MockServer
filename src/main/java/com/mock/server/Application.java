@@ -80,6 +80,37 @@ public class Application {
             mockQuery.log();
             mockServer.addMockQuery(mockQuery);
 
+            mockQuery = new MockQuery().inCase(
+                    new MockRequest()
+                            .hasPath("/products/pro[a-zA-Z]+/price")
+                            .hasMethod(Method.GET)
+                            .hasQueryParameters("?a=1&b=2"))
+                    .respondWith(
+                            new MockResponse()
+                                    .withBody(
+                                            new JSONObject("{\"Info\":\"Simple GET request with multiple headers and query parameters\"}"))
+                                    .withStatus(200)
+                                    .withHeader("browser","mozilla")
+                                    .withHeader("time","12:00 AM")
+                    );
+            mockQuery.log();
+            mockServer.addMockQuery(mockQuery);
+
+            mockQuery = new MockQuery().inCase(
+                    new MockRequest()
+                            .hasPath("/products/pro[a-zA-Z]+/price")
+                            .hasMethod(Method.GET)
+                            .hasQueryParametersRegex("?a=[0-9]&b=[0-9]"))
+                    .respondWith(
+                            new MockResponse()
+                                    .withBody(
+                                            new JSONObject("{\"Info\":\"Simple GET request with multiple headers and regex in query parameters\"}"))
+                                    .withStatus(200)
+                                    .withHeader("browser","mozilla")
+                                    .withHeader("time","12:00 AM")
+                    );
+            mockQuery.log();
+            mockServer.addMockQuery(mockQuery);
         };
     }
 
