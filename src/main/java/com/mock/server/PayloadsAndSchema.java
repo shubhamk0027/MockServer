@@ -14,26 +14,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PayloadsAndSchema {
 
     private final ArrayList<POSTData> postData ;
-    private final AtomicInteger payLoadCount;
+    private int payLoadCount;
 
     private PayloadsAndSchema(){
         postData = new ArrayList <>();
-        payLoadCount= new AtomicInteger(0);
+        payLoadCount= 0;
     }
 
-    private int getPayLoadCount(){
-        return payLoadCount.incrementAndGet();
-    }
-
-    public int addPayload(int key,boolean mode, JSONObject object){
-        synchronized (this){
-            if(key>postData.size()){
-                postData.add(new POSTData());
-            }
+    public synchronized int addPayload(int key,boolean mode, JSONObject object){
+        // this whole operation is made synchronized to make sure the addition is atomic.
+        // otherwise inconsistency can occur!
+        if(key>postData.size()){
+            postData.add(new POSTData());
         }
-        int ret=getPayLoadCount();
-        Payload payload = new Payload(ret,mode,object);
-        postData.get(key-1).addPayload(payload);
+        int ret=++payLoadCount;
+        try {
+            Payload payload = new Payload(ret, mode, object);
+            postData.get(key - 1).addPayload(payload);
+        }catch(Exception e){
+            payLoadCount--;
+            throw e;
+        }
         return ret;
     }
 

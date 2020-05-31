@@ -109,6 +109,21 @@ public class Application {
             mockQuery.log();
             mockServer.addMockQuery(mockQuery);
 
+            // Same post query but with a different payload
+            mockQuery = new MockQuery().inCase(
+                    new MockRequest()
+                            .hasPath("/products/cardboard/")
+                            .hasMethod(Method.POST)
+                            .hasBody(new JSONObject("{\"city\":\"kolkata\",\"name\":\"bapu\",\"age\":95}")))
+                    .respondWith(
+                            new MockResponse()
+                                    .withBody(
+                                            new JSONObject("{\"Info\":\"Simple Post Request\"}"))
+                                    .withStatus(200)
+                                    .withHeader("browser", "firefox")
+                    );
+            mockQuery.log();
+            mockServer.addMockQuery(mockQuery);
 
             mockQuery = new MockQuery().inCase(
                     new MockRequest()

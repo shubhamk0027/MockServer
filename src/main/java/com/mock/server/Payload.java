@@ -22,7 +22,7 @@ public class Payload {
         try {
             JSONAssert.assertEquals(payload, object, mode);
             return true;
-        }catch(JSONException e){
+        }catch(AssertionError e){
             return false;
         }
     }
