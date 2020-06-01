@@ -43,6 +43,7 @@ public class Application {
 
 
     public static void main(String[] args) {
+        logger.info("Greetings from MockServer!");
         SpringApplication.run(Application.class, args);
     }
 
