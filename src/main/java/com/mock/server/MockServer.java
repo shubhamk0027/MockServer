@@ -2,15 +2,19 @@ package com.mock.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import javax.naming.spi.ObjectFactory;
 import java.util.*;
 
 
 @Service
+// @Scope("prototype")
 public class MockServer {
 
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
@@ -19,7 +23,7 @@ public class MockServer {
     private final RedisClient redisClient;
     private final TreeNode root;
     private final Verifier verifier;
-    private final PayloadsAndSchema payloadsAndSchema;
+    private final PayloadsAndSchema payloadsAndSchema ;
 
     private Integer getTypeCounter;
     private Integer postTypeCounter;
@@ -28,11 +32,10 @@ public class MockServer {
             RedisClient redisClient,
             Verifier verifier,
             PayloadsAndSchema payloadsAndSchema) {
-
         root = new TreeNode(new DirName("ROOT"));
         this.redisClient = redisClient;
         this.verifier=verifier;
-        this.payloadsAndSchema=payloadsAndSchema;
+        this.payloadsAndSchema= payloadsAndSchema;
 
         getTypeCounter = 0;
         postTypeCounter = 0;
@@ -81,6 +84,7 @@ public class MockServer {
 
     // Queries with a request body
     private void addPostTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
+        JSONObject payloadBody = new JSONObject(mockQuery.getMockRequest().getJsonBody());
 
         TreeNode trav = traverse(pathList);
 
@@ -96,13 +100,12 @@ public class MockServer {
         int redisKey = payloadsAndSchema.addPayload(
                 trav.getId(),
                 mockQuery.getMockRequest().getCheckMode(),
-                mockQuery.getMockRequest().getJsonBody()
+                payloadBody
         );
 
         String key = "P"+redisKey;
         // Add the value to redis after serialization
-        RedisValue redisValue = new RedisValue(mockQuery.getMockResponse());
-        String value = mapper.writeValueAsString(redisValue);
+        String value = mapper.writeValueAsString(mockQuery.getMockResponse());
 
         logger.info("Payload List At: "+trav.getId());
         logger.info("Key: "+key);
@@ -130,8 +133,7 @@ public class MockServer {
 
         String key = "G"+trav.getId();
         // Add the value to redis after serialization
-        RedisValue redisValue = new RedisValue(mockQuery.getMockResponse());
-        String value = mapper.writeValueAsString(redisValue);
+        String value = mapper.writeValueAsString(mockQuery.getMockResponse());
 
         logger.info("Key: "+key);
         logger.info("Val: "+value);
@@ -160,7 +162,7 @@ public class MockServer {
     }
 
     // payloads and schema check
-    public RedisValue postTypeResponse(ArrayList<String> pathList, JSONObject jsonObject) throws Exception {
+    public MockResponse postTypeResponse(ArrayList<String> pathList, JSONObject jsonObject) throws Exception {
         logger.info("........................");
         logger.info("Post Matching Process Started");
 
@@ -179,11 +181,11 @@ public class MockServer {
 
         // deserialize and return
         String res = redisClient.getVal("P"+at);
-        return mapper.readValue(res,RedisValue.class);
+        return mapper.readValue(res,MockResponse.class);
     }
 
     // no extra checks required
-    public RedisValue getTypeResponse(ArrayList<String> pathList) throws Exception {
+    public MockResponse getTypeResponse(ArrayList<String> pathList) throws Exception {
         logger.info("........................");
         logger.info("Get Matching Process Started");
 
@@ -196,7 +198,7 @@ public class MockServer {
 
         logger.info("Found at G"+ sol.getId());
         String res = redisClient.getVal("G"+sol.getId());
-        return mapper.readValue(res,RedisValue.class);
+        return mapper.readValue(res,MockResponse.class);
     }
 
 
@@ -230,11 +232,41 @@ public class MockServer {
             }
         }
 
-        payloadsAndSchema.addSchema(trav.getId(),mockSchema.isCheckMode(),mockSchema.getSchema());
+        payloadsAndSchema.addSchema(
+                trav.getId(),
+                mockSchema.isCheckMode(),
+                SchemaLoader.load(new JSONObject(mockSchema.getSchema()))
+        );
+        logger.info("Added Schema:"+mockSchema.getSchema());
         logger.info("Schema Added at key val P"+trav.getId());
 
     }
 
+    // for Admin Ports->
+    // Cannot construct instance of `org.everit.json.schema.Schema` (no Creators, like default constructor, exist)
+    public void addSchema(String body) throws JsonProcessingException {
+        MockSchema mockSchema = mapper.readValue(body,MockSchema.class);
+        addSchema(mockSchema);
+    }
+
+    public void addMockQuery(String body) throws JsonProcessingException {
+        MockQuery mockQuery = mapper.readValue(body,MockQuery.class);
+        mockQuery.log();
+        addMockQuery(mockQuery);
+    }
+
+    public String getSchema(ArrayList<String> pathList) throws IllegalAccessException {
+        logger.info("........................");
+        logger.info("Getting Schema");
+
+        TreeNode sol = find(root, pathList, 0);
+        if(sol == null) {
+            throw new IllegalAccessException("Path does not exists!");
+        }
+        if(sol.getId() == -1) throw new IllegalAccessException("Path does not exists!");
+        logger.info("GOT schema at "+sol.getId());
+        return payloadsAndSchema.getSchema(sol.getId());
+    }
 
 }
 

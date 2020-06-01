@@ -1,7 +1,9 @@
 package com.mock.server;
 
+import org.everit.json.schema.Schema;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // for the rest it will be ignored!
 
 @Component
+// @Scope("prototype")
 public class PayloadsAndSchema {
 
     private final ArrayList<POSTData> postData ;
@@ -44,13 +47,19 @@ public class PayloadsAndSchema {
         return key;
     }
 
-    public void addSchema(int key, boolean mode, JSONObject object){
+    public void addSchema(int key, boolean mode, Schema schema){
         synchronized (this){
             if(key>postData.size()){
                 postData.add(new POSTData());
             }
         }
-        postData.get(key-1).setSchema(SchemaLoader.load(object),mode);
+        postData.get(key-1).setSchema(schema,mode);
     }
 
+    public String getSchema(int key) throws IllegalAccessException {
+        if(key>postData.size()) {
+            throw new IllegalAccessException("No Schema Present");
+        }
+        return postData.get(key-1).getSchema();
+    }
 }

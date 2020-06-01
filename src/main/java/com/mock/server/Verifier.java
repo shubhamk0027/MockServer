@@ -90,7 +90,7 @@ public class Verifier {
      * For methods not supporting particular members like request body for GET, the actual server will ignore them.
      */
 
-    public  void verifyMethodAndQuery(Method method, JSONObject jsonBody, String queryParameters, String queryParametersRegex) {
+    public  void verifyMethodAndQuery(Method method, String jsonBody, String queryParameters, String queryParametersRegex) {
         if(queryParameters!=null && queryParametersRegex!=null)
             throw new IllegalStateException("You can not set both query Parameters and QueryParameters in Regex at the same time");
         if(method == Method.GET) {
@@ -115,6 +115,8 @@ public class Verifier {
             }
         }
     }
+
+
 
 
 }

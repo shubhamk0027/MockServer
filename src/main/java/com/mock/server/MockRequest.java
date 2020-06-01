@@ -18,7 +18,7 @@ public class MockRequest {
 
     private Method method;
     private String path;
-    private JSONObject jsonBody;
+    private String jsonBody;
     private String queryParameters;
     private String queryParametersRegex;
     private boolean checkMode=NOT_STRICT;
@@ -28,7 +28,7 @@ public class MockRequest {
     public Method getMethod() {
         return method;
     }
-    public JSONObject getJsonBody() {
+    public String getJsonBody() {
         return jsonBody;
     }
     public String getQueryParameters() {
@@ -71,7 +71,7 @@ public class MockRequest {
         return this;
     }
 
-    public MockRequest hasBody(JSONObject jsonBody) {
+    public MockRequest hasBody(String jsonBody) {
         this.jsonBody = jsonBody;
         return this;
     }

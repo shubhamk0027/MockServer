@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MockResponse {
     private int status;
-    private JSONObject jsonBody;
+    private String jsonBody;
     private Map <String,String> headers;
 
     // this jsonBody will be converted to the string before inserting it to the redis
@@ -19,7 +19,7 @@ public class MockResponse {
         return status;
     }
 
-    public JSONObject getJsonBody() {
+    public String getJsonBody() {
         return jsonBody;
     }
 
@@ -32,7 +32,7 @@ public class MockResponse {
         return this;
     }
 
-    public MockResponse withBody(JSONObject jsonBody){
+    public MockResponse withBody(String jsonBody){
         this.jsonBody=jsonBody;
         return this;
     }

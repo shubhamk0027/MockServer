@@ -1,15 +1,17 @@
 package com.mock.server;
 
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 
 public class MockSchema {
 
-    private Method method = Method.POST;
-    private boolean checkMode = false;
-    private JSONObject schema;
-    private String path;
-    private String queryParameters;
-    private String queryParametersRegex;
+    public Method method = Method.POST;
+    public boolean checkMode = false;
+    public String schema;
+    public String path;
+    public String queryParameters;
+    public String queryParametersRegex;
 
     public Method getMethod() {
         return method;
@@ -34,11 +36,11 @@ public class MockSchema {
         return this;
     }
 
-    public JSONObject getSchema() {
+    public String getSchema() {
         return schema;
     }
 
-    public MockSchema setSchema(JSONObject schema) {
+    public MockSchema setSchema(String schema) {
         this.schema = schema;
         return this;
     }
@@ -60,5 +62,4 @@ public class MockSchema {
         this.queryParametersRegex = queryParametersRegex;
         return this;
     }
-
 }

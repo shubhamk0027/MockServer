@@ -28,6 +28,10 @@ public class POSTData {
         this.schemaCheckMode=schemaCheckMode;
     }
 
+    public String getSchema(){
+        return schema.toString();
+    }
+
     private void verifySchema(JSONObject jsonObject){
         if(schema==null) return;
         schema.validate(jsonObject);
