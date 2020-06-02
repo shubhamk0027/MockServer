@@ -1,6 +1,7 @@
 package com.mock.server;
 
 import org.everit.json.schema.Schema;
+import org.everit.json.schema.ValidationException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,25 +15,21 @@ public class POSTData {
     private static final Logger logger= LoggerFactory.getLogger(POSTData.class);
 
     private Schema schema;
-    private boolean schemaCheckMode;
     private final ArrayList <Payload> payloads;
 
-    POSTData(){
-        payloads= new ArrayList <>();
-        schemaCheckMode=false;
-    }
+    POSTData(){ payloads= new ArrayList <>(); }
 
     // lock this PostData
-    public synchronized void setSchema(Schema schema, boolean schemaCheckMode){
+    public synchronized void setSchema(Schema schema){
+        logger.info("Schema Updated to "+ schema);
         this.schema=schema;
-        this.schemaCheckMode=schemaCheckMode;
     }
 
     public String getSchema(){
         return schema.toString();
     }
 
-    private void verifySchema(JSONObject jsonObject){
+    private void verifySchema(JSONObject jsonObject) throws ValidationException {
         if(schema==null) return;
         schema.validate(jsonObject);
     }

@@ -117,6 +117,27 @@ public class Verifier {
     }
 
 
+    public ArrayList <String> getSimplePathList(String uri, String method){
+        ArrayList<String> res = new ArrayList <>();
+        res.add(method);
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i=1;i<uri.length();i++){
+            if(uri.charAt(i)=='/'){
+                res.add(stringBuilder.toString());
+                stringBuilder.setLength(0);
+            }else if(Character.isLetterOrDigit(uri.charAt(i))){
+                stringBuilder.append(uri.charAt(i));
+            }else{
+                throw new IllegalStateException("Path invalid!");
+            }
+        }
+        if(stringBuilder.length()!=0){
+            res.add(stringBuilder.toString());
+        }
+        return res;
+    }
+
+
 
 
 }

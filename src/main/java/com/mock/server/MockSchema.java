@@ -1,20 +1,42 @@
 package com.mock.server;
 
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MockSchema {
 
-    public Method method = Method.POST;
-    public boolean checkMode = false;
-    public String schema;
-    public String path;
-    public String queryParameters;
-    public String queryParametersRegex;
+    private static final Logger logger = LoggerFactory.getLogger(MockSchema.class);
+
+    private String teamKey;
+    private Method method = Method.POST;
+    private String schema;
+    private String path;
+    private String queryParameters;
+    private String queryParametersRegex;
+
+    public String getPath(){ return path; }
 
     public Method getMethod() {
         return method;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public String getQueryParameters() {
+        return queryParameters;
+    }
+
+    public String getQueryParametersRegex() {
+        return queryParametersRegex;
+    }
+
+    public String getTeamKey(){ return teamKey; }
+
+    public MockSchema setTeamKey(String teamKey){
+        this.teamKey=teamKey;
+        return this;
     }
 
     public MockSchema setPath(String path) {
@@ -22,22 +44,9 @@ public class MockSchema {
         return this;
     }
 
-    public String getPath(){ return path; }
-
     public MockSchema setMethod(Method method) {
         this.method = method;
         return this;
-    }
-
-    public boolean isCheckMode() { return checkMode; }
-
-    public MockSchema strictCheckMode(boolean checkMode) {
-        this.checkMode = checkMode;
-        return this;
-    }
-
-    public String getSchema() {
-        return schema;
     }
 
     public MockSchema setSchema(String schema) {
@@ -45,21 +54,23 @@ public class MockSchema {
         return this;
     }
 
-    public String getQueryParameters() {
-        return queryParameters;
-    }
-
     public MockSchema setQueryParameters(String queryParameters) {
         this.queryParameters = queryParameters;
         return this;
     }
 
-    public String getQueryParametersRegex() {
-        return queryParametersRegex;
-    }
-
     public MockSchema setQueryParametersRegex(String queryParametersRegex) {
         this.queryParametersRegex = queryParametersRegex;
         return this;
+    }
+
+    public void log(){
+        logger.info("Mock Schema ......");
+        logger.info("teamKey: "+teamKey);
+        logger.info("method: "+method);
+        logger.info("schema: "+schema);
+        logger.info("path: "+path);
+        logger.info("queryParameters: "+queryParameters);
+        logger.info("queryParametersRegex: "+queryParametersRegex);
     }
 }

@@ -1,30 +1,26 @@
 package com.mock.server;
 
-
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 /** Form authentication types are ignored */
 // https://docs.oracle.com/javaee/7/api/javax/json/JsonObject.html
 
 public class MockRequest {
 
-    public static final boolean STRICT = true;
-    public static final boolean NOT_STRICT = false;
-
     private static final Logger logger = LoggerFactory.getLogger(MockRequest.class);
 
+    private String teamKey;
     private Method method;
     private String path;
     private String jsonBody;
     private String queryParameters;
     private String queryParametersRegex;
-    private boolean checkMode=NOT_STRICT;
+    private boolean checkMode=false;
     // check mode will be ignored if method does not support payload
 
 
+    public String getTeamKey(){ return teamKey; }
     public Method getMethod() {
         return method;
     }
@@ -41,6 +37,12 @@ public class MockRequest {
         return path;
     }
     public boolean getCheckMode(){ return  checkMode; }
+
+
+    public MockRequest fromTeam(String teamKey){
+        this.teamKey=teamKey;
+        return this;
+    }
 
     public MockRequest inCheckMode(boolean checkMode){
         this.checkMode= checkMode;

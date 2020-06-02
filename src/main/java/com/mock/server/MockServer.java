@@ -9,12 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import javax.naming.spi.ObjectFactory;
 import java.util.*;
 
 
 @Service
-// @Scope("prototype")
+@Scope("prototype")
 public class MockServer {
 
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
@@ -28,10 +27,13 @@ public class MockServer {
     private Integer getTypeCounter;
     private Integer postTypeCounter;
 
-    private MockServer(
+    MockServer(
             RedisClient redisClient,
             Verifier verifier,
             PayloadsAndSchema payloadsAndSchema) {
+
+        logger.info("A new MockServer Created!");
+
         root = new TreeNode(new DirName("ROOT"));
         this.redisClient = redisClient;
         this.verifier=verifier;
@@ -162,16 +164,16 @@ public class MockServer {
     }
 
     // payloads and schema check
-    public MockResponse postTypeResponse(ArrayList<String> pathList, JSONObject jsonObject) throws Exception {
+    public MockResponse postTypeResponse(ArrayList<String> pathList, JSONObject jsonObject) throws IllegalArgumentException, JsonProcessingException {
         logger.info("........................");
         logger.info("Post Matching Process Started");
 
         TreeNode sol = find(root, pathList, 0);
         if(sol == null) {
-            throw new Exception("Directory matching the path does not exists!");
+            throw new IllegalArgumentException("Directory matching the path does not exists!");
         }
 
-        if(sol.getId() == -1) throw new Exception("Path does not exists!");
+        if(sol.getId() == -1) throw new IllegalArgumentException("Path does not exists!");
 
         // check if there exists such a payload
         int at = payloadsAndSchema.checkPayload(sol.getId(),jsonObject);
@@ -185,16 +187,16 @@ public class MockServer {
     }
 
     // no extra checks required
-    public MockResponse getTypeResponse(ArrayList<String> pathList) throws Exception {
+    public MockResponse getTypeResponse(ArrayList<String> pathList) throws IllegalArgumentException, JsonProcessingException {
         logger.info("........................");
         logger.info("Get Matching Process Started");
 
         TreeNode sol = find(root, pathList, 0);
         if(sol == null) {
-            throw new Exception("Directory matching the path does not exists!");
+            throw new IllegalArgumentException("Directory matching the path does not exists!");
         }
 
-        if(sol.getId() == -1) throw new Exception("Path does not exists!");
+        if(sol.getId() == -1) throw new IllegalArgumentException("Path does not exists!");
 
         logger.info("Found at G"+ sol.getId());
         String res = redisClient.getVal("G"+sol.getId());
@@ -234,36 +236,21 @@ public class MockServer {
 
         payloadsAndSchema.addSchema(
                 trav.getId(),
-                mockSchema.isCheckMode(),
                 SchemaLoader.load(new JSONObject(mockSchema.getSchema()))
         );
-        logger.info("Added Schema:"+mockSchema.getSchema());
         logger.info("Schema Added at key val P"+trav.getId());
-
     }
 
-    // for Admin Ports->
-    // Cannot construct instance of `org.everit.json.schema.Schema` (no Creators, like default constructor, exist)
-    public void addSchema(String body) throws JsonProcessingException {
-        MockSchema mockSchema = mapper.readValue(body,MockSchema.class);
-        addSchema(mockSchema);
-    }
 
-    public void addMockQuery(String body) throws JsonProcessingException {
-        MockQuery mockQuery = mapper.readValue(body,MockQuery.class);
-        mockQuery.log();
-        addMockQuery(mockQuery);
-    }
-
-    public String getSchema(ArrayList<String> pathList) throws IllegalAccessException {
+    public String getSchema(ArrayList<String> pathList) throws IllegalArgumentException {
         logger.info("........................");
         logger.info("Getting Schema");
 
         TreeNode sol = find(root, pathList, 0);
         if(sol == null) {
-            throw new IllegalAccessException("Path does not exists!");
+            throw new IllegalArgumentException("Path does not exists!");
         }
-        if(sol.getId() == -1) throw new IllegalAccessException("Path does not exists!");
+        if(sol.getId() == -1) throw new IllegalArgumentException("Path does not exists!");
         logger.info("GOT schema at "+sol.getId());
         return payloadsAndSchema.getSchema(sol.getId());
     }

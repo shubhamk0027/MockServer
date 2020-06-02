@@ -1,25 +1,24 @@
 package com.mock.server;
 
 import org.everit.json.schema.Schema;
-import org.everit.json.schema.loader.SchemaLoader;
+import org.everit.json.schema.ValidationException;
 import org.json.JSONObject;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 // https://www.baeldung.com/java-org-json
 // this feature is only for post and put method
 // for the rest it will be ignored!
 
 @Component
-// @Scope("prototype")
+@Scope("prototype")
 public class PayloadsAndSchema {
 
     private final ArrayList<POSTData> postData ;
     private int payLoadCount;
 
-    private PayloadsAndSchema(){
+    PayloadsAndSchema(){
         postData = new ArrayList <>();
         payLoadCount= 0;
     }
@@ -34,31 +33,31 @@ public class PayloadsAndSchema {
         try {
             Payload payload = new Payload(ret, mode, object);
             postData.get(key - 1).addPayload(payload);
-        }catch(Exception e){
+        }catch(IllegalArgumentException | ValidationException e){
             payLoadCount--;
             throw e;
         }
         return ret;
     }
 
-    public int checkPayload(int key, JSONObject object) throws Exception {
+    public int checkPayload(int key, JSONObject object) {
         key = postData.get(key-1).anyMatchPayload(object);
-        if(key==-1) throw new Exception("No matching payload found!");
+        if(key==-1) throw new IllegalArgumentException("No matching payload found!");
         return key;
     }
 
-    public void addSchema(int key, boolean mode, Schema schema){
+    public void addSchema(int key, Schema schema){
         synchronized (this){
             if(key>postData.size()){
                 postData.add(new POSTData());
             }
         }
-        postData.get(key-1).setSchema(schema,mode);
+        postData.get(key-1).setSchema(schema);
     }
 
-    public String getSchema(int key) throws IllegalAccessException {
+    public String getSchema(int key) throws IllegalArgumentException {
         if(key>postData.size()) {
-            throw new IllegalAccessException("No Schema Present");
+            throw new IllegalArgumentException("No Schema Present for this path");
         }
         return postData.get(key-1).getSchema();
     }

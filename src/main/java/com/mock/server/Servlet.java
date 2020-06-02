@@ -25,35 +25,17 @@ import java.util.Scanner;
 class Servlet extends HttpServlet {
 
     public static final Logger logger= LoggerFactory.getLogger(Servlet.class);
-    private final MockServer mockServer;
+    private final ServiceFactory serviceFactory;
+    private final Verifier verifier;
 
-    Servlet(MockServer mockServer){
-        this.mockServer=mockServer;
+    Servlet(ServiceFactory serviceFactory, Verifier verifier){
+        this.serviceFactory=serviceFactory;
+        this.verifier=verifier;
     }
 
     private String getBody(HttpServletRequest request) throws IOException {
         Scanner s = new Scanner(request.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
-    }
-
-    private ArrayList<String> getSimplePathList(String uri,String method){
-        ArrayList<String> res = new ArrayList <>();
-        res.add(method);
-        StringBuilder stringBuilder = new StringBuilder();
-        for(int i=1;i<uri.length();i++){
-            if(uri.charAt(i)=='/'){
-                res.add(stringBuilder.toString());
-                stringBuilder.setLength(0);
-            }else if(Character.isLetterOrDigit(uri.charAt(i))){
-                stringBuilder.append(uri.charAt(i));
-            }else{
-                throw new IllegalStateException("Path invalid!");
-            }
-        }
-        if(stringBuilder.length()!=0){
-            res.add(stringBuilder.toString());
-        }
-        return res;
     }
 
 
@@ -62,14 +44,21 @@ class Servlet extends HttpServlet {
             HttpServletResponse response,
             String method) throws Exception {
 
-        ArrayList<String> pathList = getSimplePathList(request.getRequestURI(),method);
+        String uri=request.getRequestURI();
+        int i=1;
+        for(;i<uri.length();i++) if(uri.charAt(i)=='/') break;
+        String key = uri.substring(1,i);
+        uri = uri.substring(i);
+
+        ArrayList<String> pathList = verifier.getSimplePathList(uri,method);
+
         String queryParameters=  request.getQueryString();
         if(queryParameters!=null && queryParameters.length()>0) {
             pathList.add(queryParameters);
         }
 
         logger.info("Path: "+pathList);
-        MockResponse redisValue = mockServer.getTypeResponse(pathList);
+        MockResponse redisValue = serviceFactory.getTypeResponse(key,pathList);
         logger.info("Returned details: ");
         logger.info(""+redisValue.getStatus());
 
@@ -88,16 +77,25 @@ class Servlet extends HttpServlet {
             HttpServletRequest request,
             HttpServletResponse response,
             String method) throws Exception {
-        ArrayList<String> pathList = getSimplePathList(request.getRequestURI(),method);
+
+        String uri=request.getRequestURI();
+        int i=1;
+        for(;i<uri.length();i++) if(uri.charAt(i)=='/') break;
+        String key = uri.substring(1,i);
+        uri = uri.substring(i);
+
+        ArrayList<String> pathList = verifier.getSimplePathList(uri,method);
+
         String queryParameters=  request.getQueryString();
         if(queryParameters!=null && queryParameters.length()>0)
-            pathList.add(queryParameters); // ignoring ?
+            pathList.add(queryParameters);
 
         String body = getBody(request);
         logger.info("Path: "+pathList);
         logger.info("Body: "+body);
 
-        MockResponse redisValue = mockServer.postTypeResponse(pathList, new JSONObject(body));
+        MockResponse redisValue = serviceFactory.postTypeResponse(key,pathList,body);
+
         logger.info("Returned details: ");
         logger.info(""+redisValue.getStatus());
 

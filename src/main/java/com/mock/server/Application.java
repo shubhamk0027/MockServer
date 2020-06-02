@@ -1,12 +1,5 @@
 package com.mock.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.startup.Tomcat;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -20,25 +13,27 @@ import java.io.File;
 @SpringBootApplication
 public class Application {
 
-    MockServer mockServer;
+    private final AdminServlet adminServlet;
+    private final Servlet servlet;
+
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
-    Application(MockServer mockServer) {
-        this.mockServer = mockServer;
-
+    Application(
+            AdminServlet adminServlet,
+            Servlet servlet) {
+        this.adminServlet = adminServlet;
+        this.servlet = servlet;
     }
 
 
     @Bean
     public ServletRegistrationBean <AdminServlet> AdminservletRegistrationBean() {
-        return new ServletRegistrationBean <>(
-                new AdminServlet(mockServer), "/_admin/*");
+        return new ServletRegistrationBean <>(adminServlet, "/_admin/*");
     }
 
     @Bean
     public ServletRegistrationBean <Servlet> servletRegistrationBean() {
-        return new ServletRegistrationBean <>(
-                new Servlet(mockServer), "/*");
+        return new ServletRegistrationBean <>(servlet, "/*");
     }
 
 
@@ -47,9 +42,8 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
-
-    public void addQueries() throws JsonProcessingException {
                 /*
+    public void addQueries() throws JsonProcessingException {
             {
                 "properties":{
                     "city": {
@@ -67,6 +61,7 @@ public class Application {
 
         // https://github.com/everit-org/json-schema
         // strict schema check allowed
+/*
         MockSchema mockSchema = new MockSchema()
                 .setMethod(Method.POST)                                     // Methods that do not accept any payloads will give error!
                 .setSchema("{\n" +
@@ -194,15 +189,14 @@ public class Application {
                 );
         mockQuery.log();
         mockServer.addMockQuery(mockQuery);
-
-    }
-
+    }*/
 
 
     @Bean
     CommandLineRunner commandLineRunner() {
         return (args) -> {
-            addQueries();
+            logger.info("Greetings from mock server!");
+            // addQueries();
         };
     }
 
