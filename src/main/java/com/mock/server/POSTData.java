@@ -43,12 +43,15 @@ public class POSTData {
     }
 
     public synchronized void deletePayload(JSONObject jsonObject){
+        boolean found=false;
         for(Payload payload : payloads) {
             if(payload.equals(jsonObject)) {
                 // payload=null;
                 payload.setNull();
+                found=true;
             }
         }
+        if(!found) throw new IllegalArgumentException("No matching payload found for this query!");
     }
 
     public int anyMatchPayload(JSONObject jsonObject){
