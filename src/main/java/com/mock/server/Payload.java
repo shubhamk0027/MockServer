@@ -8,7 +8,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 public class Payload {
 
-    private final JSONObject payload;
+    private JSONObject payload;
     private final boolean mode;
     private final int key;
 
@@ -19,6 +19,7 @@ public class Payload {
     }
 
     public boolean equals(JSONObject object) {
+        if(payload==null) return false;
         try {
             JSONAssert.assertEquals(payload, object, mode);
             return true;
@@ -27,6 +28,7 @@ public class Payload {
         }
     }
 
+    public void setNull(){ payload =null; }
     public JSONObject getPayload(){ return payload;}
     public int getKey(){ return key; }
 }

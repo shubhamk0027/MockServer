@@ -42,6 +42,15 @@ public class POSTData {
         }
     }
 
+    public synchronized void deletePayload(JSONObject jsonObject){
+        for(Payload payload : payloads) {
+            if(payload.equals(jsonObject)) {
+                // payload=null;
+                payload.setNull();
+            }
+        }
+    }
+
     public int anyMatchPayload(JSONObject jsonObject){
         int key=-1;
         synchronized (payloads){ // else iterator will through concurrent modification exception

@@ -81,6 +81,13 @@ class AdminServlet extends HttpServlet {
                     out.write("Team Deleted Successfully!");
                     break;
                 }
+                case "_del/_mock":{
+                    logger.info("Received Delete Mock Request!");
+                    serviceFactory.deleteMockQuery(body);
+                    PrintWriter out = resp.getWriter();
+                    out.write("MockQuery Deleted Successfully!");
+                    break;
+                }
                 default:
                     throw new IllegalPathStateException("Path not understood");
             }

@@ -17,6 +17,7 @@ import java.util.*;
 public class MockServer {
 
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final RedisClient redisClient;
@@ -45,7 +46,7 @@ public class MockServer {
     }
 
     // Make this operation atomic
-    public void addMockQuery(MockQuery mockQuery) throws JsonProcessingException {
+    public void updateMockQuery(MockQuery mockQuery,boolean delete) throws JsonProcessingException {
         logger.info("...............................");
         logger.info("Adding to the URI tree");
 
@@ -66,9 +67,9 @@ public class MockServer {
         if(mockQuery.getMockRequest().getMethod()==Method.POST ||
                 mockQuery.getMockRequest().getMethod()==Method.PUT ||
                     mockQuery.getMockRequest().getMethod()==Method.DEL) {
-            addPostTypeMockQuery(pathList,mockQuery);
+            postTypeMockQuery(pathList,mockQuery,delete);
         } else {
-            addGetTypeMockQuery(pathList,mockQuery);
+            getTypeMockQuery(pathList,mockQuery,delete);
         }
 
     }
@@ -85,7 +86,7 @@ public class MockServer {
     }
 
     // Queries with a request body
-    private void addPostTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
+    private void postTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery,boolean delete) throws JsonProcessingException {
         JSONObject payloadBody = new JSONObject(mockQuery.getMockRequest().getJsonBody());
 
         TreeNode trav = traverse(pathList);
@@ -99,6 +100,15 @@ public class MockServer {
             }
         }
 
+        if(delete){
+            payloadsAndSchema.deletePayload(
+                    trav.getId(),
+                    payloadBody
+            );
+            logger.info("Deleted Payload at "+trav.getId());
+            return ;
+        }
+
         int redisKey = payloadsAndSchema.addPayload(
                 trav.getId(),
                 mockQuery.getMockRequest().getCheckMode(),
@@ -106,7 +116,6 @@ public class MockServer {
         );
 
         String key = "P"+redisKey;
-        // Add the value to redis after serialization
         String value = mapper.writeValueAsString(mockQuery.getMockResponse());
 
         logger.info("Payload List At: "+trav.getId());
@@ -120,9 +129,21 @@ public class MockServer {
 
 
     // Queries with a request body
-    private void addGetTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery) throws JsonProcessingException {
+    private void getTypeMockQuery(ArrayList<Directory> pathList, MockQuery mockQuery, boolean delete) throws JsonProcessingException {
 
         TreeNode trav = traverse(pathList);
+
+        if(delete){ // A delete operation
+            int key;
+            synchronized (trav){
+                if(trav.getId()==-1) return;
+                key = trav.getId();
+                trav.setId(-1);
+            }
+            redisClient.deleteKey("G"+key);
+            logger.info("Deleted key "+"G"+key);
+            return ;
+        }
 
         if(trav.getId() == -1) {
             synchronized (trav) {
@@ -133,15 +154,13 @@ public class MockServer {
             }
         }
 
-        String key = "G"+trav.getId();
-        // Add the value to redis after serialization
-        String value = mapper.writeValueAsString(mockQuery.getMockResponse());
 
+        String key = "G"+trav.getId();
+        String value = mapper.writeValueAsString(mockQuery.getMockResponse());
         logger.info("Key: "+key);
         logger.info("Val: "+value);
 
         redisClient.addVal(key,value);
-
         value = redisClient.getVal(key);
         logger.info("Added to Redis: "+key+" : "+ value);
     }
@@ -256,27 +275,3 @@ public class MockServer {
     }
 
 }
-
-
-/*
-    // only * is considered a special character matching any!
-    boolean matches(String text, String patt) {
-        int n = text.length(), m = patt.length();
-        boolean[][] dp = new boolean[n + 1][m + 1];
-
-        for(int i = 0; i <= n; i++) for(int j = 0; j <= m; j++) dp[i][j] = false;
-        dp[0][0] = true;
-        for(int i = 1; i <= m; i++)
-            if(patt.charAt(i - 1) == '*') {
-                dp[0][i] = dp[0][i - 1];
-            }
-
-        for(int i = 1; i <= n; i++) {
-            for(int j = 1; j <= m; j++) {
-                if(patt.charAt(j - 1) == '*') dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
-                else if(patt.charAt(j - 1) == text.charAt(i - 1)) dp[i][j] = dp[i - 1][j - 1];
-            }
-        }
-        return dp[n][m];
-    }
-*/

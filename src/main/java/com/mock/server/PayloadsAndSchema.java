@@ -40,6 +40,11 @@ public class PayloadsAndSchema {
         return ret;
     }
 
+    public void deletePayload(int key, JSONObject object) throws IllegalArgumentException {
+        if(key>postData.size()) throw new IllegalArgumentException("No Query Exists of this type!");
+        postData.get(key-1).deletePayload(object);
+    }
+
     public int checkPayload(int key, JSONObject object) {
         key = postData.get(key-1).anyMatchPayload(object);
         if(key==-1) throw new IllegalArgumentException("No matching payload found!");

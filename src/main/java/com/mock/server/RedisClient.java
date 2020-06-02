@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.Random;
 // even really really long keys don't have a large impact on the speed of redis
 
@@ -27,21 +25,13 @@ public class RedisClient {
         redissonClient= Redisson.create(config);
     }
 
-
-
     public void addVal(String key, String jsonString){
         RList <String> list = redissonClient.getList(key);
         list.add(jsonString);
     }
 
-    public int getCounter(){
-        RBucket<Integer> rBucket= redissonClient.getBucket("counter");
-        return  rBucket.get();
-    }
-
-    public void setCounter(int val){
-        RBucket<Integer> rBucket= redissonClient.getBucket("counter");
-        rBucket.set(val);
+    public void deleteKey(String key){
+        redissonClient.getBucket(key).delete();
     }
 
     public String getVal(String key){

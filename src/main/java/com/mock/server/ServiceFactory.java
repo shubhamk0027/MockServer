@@ -14,10 +14,12 @@ import java.util.Map;
 public class ServiceFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceFactory.class);
+    private static final Logger OperationLogger = LoggerFactory.getLogger(ServiceFactory.class);
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private final Map <String,DevTeam> keyTeamMap;               // key-> team
-    private final Map <String,DevTeam> nameTeamMap;               // teamName ->key
+    private final Map <String,DevTeam> keyTeamMap;                  // key-> team
+    private final Map <String,DevTeam> nameTeamMap;                 // teamName ->key
 
     private final Verifier verifier;
     private final RedisClient redisClient;
@@ -40,15 +42,6 @@ public class ServiceFactory {
     }
 
     // admin functions
-    public String getApiKey(String body) throws IllegalAccessException, JsonProcessingException {
-        CreateTeamQuery  createTeamQuery = mapper.readValue(body,CreateTeamQuery.class);
-        if(!nameTeamMap.containsKey(createTeamQuery.teamName))
-            throw new IllegalArgumentException("This Team Name is invalid!");
-        if(!nameTeamMap.get(createTeamQuery.teamName).getAdminId().equals(createTeamQuery.adminId))
-            throw new IllegalAccessException("Only the Admin can have acess the api key!");
-        return nameTeamMap.get(createTeamQuery.teamName).getKey();
-    }
-
     public synchronized void deleteTeam(String body) throws IllegalAccessException, JsonProcessingException {
         DeleteTeamQuery  deleteTeamQuery = mapper.readValue(body,DeleteTeamQuery.class);
         if(!keyTeamMap.containsKey(deleteTeamQuery.key))
@@ -70,6 +63,16 @@ public class ServiceFactory {
         return apiKey;
     }
 
+    public String getApiKey(String body) throws IllegalAccessException, JsonProcessingException {
+        CreateTeamQuery  createTeamQuery = mapper.readValue(body,CreateTeamQuery.class);
+        if(!nameTeamMap.containsKey(createTeamQuery.teamName))
+            throw new IllegalArgumentException("This Team Name is invalid!");
+        if(!nameTeamMap.get(createTeamQuery.teamName).getAdminId().equals(createTeamQuery.adminId))
+            throw new IllegalAccessException("Only the Admin can have acess the api key!");
+        return nameTeamMap.get(createTeamQuery.teamName).getKey();
+    }
+
+    // developer team CRUD functions
     public void addSchema(String body) throws JsonProcessingException, IllegalAccessException  {
         MockSchema mockSchema = mapper.readValue(body,MockSchema.class);
         if(!keyTeamMap.containsKey(mockSchema.getTeamKey()))
@@ -92,11 +95,18 @@ public class ServiceFactory {
         mockQuery.log();
         if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
-        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().addMockQuery(mockQuery);
+        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery,false);
     }
 
-    // Mock Server functions
+    public void deleteMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
+        MockQuery mockQuery = mapper.readValue(body,MockQuery.class);
+        mockQuery.log();
+        if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
+            throw new IllegalAccessException("You seems to have a wrong API key!");
+        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery,true);
+    }
 
+    // Fake Server functions
     public MockResponse postTypeResponse(String key, ArrayList<String> pathList,String body ) throws IllegalAccessException, JsonProcessingException {
         logger.info("Received a Post request for key: "+key);
         if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
