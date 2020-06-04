@@ -26,7 +26,7 @@ public class MockQuery {
         logger.info("JsonReq: "+getMockRequest().getJsonBody());
         logger.info("Status: "+getMockResponse().getStatus());
         logger.info("Headers: "+getMockResponse().getHeaders().toString());
-        logger.info("JsonRes: "+getMockResponse().getJsonBody().toString());
+        logger.info("JsonRes: "+getMockResponse().getJsonBody());
     }
 
     public MockQuery respondWith(MockResponse mockResponse){

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.rmi.MarshalException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class ServiceFactory {
         isloading=false;
 
         logger.info("............................................................");
-        logger.info("DATA LOADED!");
+        logger.info("OLD DATA LOADED!");
         logger.info("............................................................");
 
         Thread persistThread = new Thread(()->{
@@ -181,8 +182,11 @@ public class ServiceFactory {
         if(!keyTeamMap.containsKey(getSchemaQuery.getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
 
+        if(getSchemaQuery.getMethod()!= Method.POST && getSchemaQuery.getMethod()!= Method.PUT && getSchemaQuery.getMethod()!= Method.DEL)
+            throw new IllegalArgumentException("Schema is only associated with POST, PUT AND DEL query!");
+
         return keyTeamMap.get(getSchemaQuery.getTeamKey()).getMockServer().getSchema(
-                verifier.getSimplePathList(getSchemaQuery.getPath(),Method.POST.val)
+                verifier.getSimplePathList(getSchemaQuery.getPath(),getSchemaQuery.getMethod().val)
         );
     }
 

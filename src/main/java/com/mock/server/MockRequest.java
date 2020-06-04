@@ -60,15 +60,11 @@ public class MockRequest {
     }
 
     public MockRequest hasQueryParameters(String queryParameters) {
-        if(queryParameters==null || queryParameters.length()<2 || queryParameters.charAt(0)!='?')
-            throw new IllegalStateException("Invalid Query Parameter Assignment!");
         this.queryParameters=queryParameters;
         return this;
     }
 
     public MockRequest hasQueryParametersRegex(String queryParametersRegex){
-        if(queryParametersRegex==null || queryParametersRegex.length()<2 || queryParametersRegex.charAt(0)!='?')
-            throw new IllegalStateException("Invalid Query Parameter Assignment!");
         this.queryParametersRegex=queryParametersRegex;
         return this;
     }
