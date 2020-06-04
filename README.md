@@ -49,6 +49,13 @@ To delete a mockquery
 ##### /getkey
 To get back the lost key. This command can only be used by the admin. 
 
+#### How to send your request to mock server in your application?
+Send your request as 
+        
+        http//localhost:8080/TEAM-SECRET-KEY/your/path/here?any=query&parameters=1
+        
+with payloads if any
+
 #### Few more things about this server:
 1. You can also send the above slash commands without slack directly as an Http request. 
 Equivalent to the above slash commands, send the JSON with above details to-
