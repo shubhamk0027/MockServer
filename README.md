@@ -6,13 +6,10 @@ This MockServer comes to the rescue by helping you create a fake server that wil
 
 ### How to use it?
 
-You can either set up the slack bot our send queries directly. Run this slack 
-bot (https://github.com/shubhamk0027/SlackBot) after adding the bearer token in 
-MessagePoster class and adding bearer token and slack client token in the environment 
+You can either set up the slack bot or send queries directly. Run this with slack bot (https://github.com/shubhamk0027/SlackBot) after adding the bearer token in MessagePoster class and adding bearer token and slack client token in the environment 
 parameters. 
 
-It also uses redis to store and reply the big responses efficiently. So you can 
-have responses with huge response body, without any performance issues. 
+It also uses redis to store and reply the big responses efficiently. So you can have responses with huge response body, without any performance issues. 
 
 Use the following slash command:
 #### TLDR;
@@ -22,26 +19,19 @@ Go through this quick tutorial below to know it better.
 
 #### Slash Commands Supported    
 ##### /addteam
-to create a new team. It will provide you with a secret team token. 
-This secret team key will be used to send and add mock queries to this mock server.
+To create a new team. It will provide you with a secret team token. This secret team key will be used to send and add mock queries to this mock server.
 
 ##### /delteam
-To delete a team. Only the admin, the user who created the team can 
-delete a team.
+To delete a team. Only the admin, the user who created the team can delete a team.
 
 ##### /addschema
-To add a schema support to the request body of the mock queries 
-you will be adding up. Its just like a backend service rejecting the queries 
-which are not according to the requested format. This is only for the http
-methods which support payloads (like PUT, POST and GET)
+To add a schema support to the request body of the mock queries you will be adding up. Its just like a backend service rejecting the queries which are not according to the requested format. This is only for the http methods which support payloads (like PUT, POST and DEL)
 
 ##### /getschema
 It will return you with the schema JSON at a path
 
 ##### /addmock 
-To add a mock query which is a mock request with a mock response body.
-A mock request is the http request you will be sending to the mockserver, and Mock response
-is the response that the mockserver will give you in return.
+To add a mock query which is a mock request with a mock response body. A mock request is the http request you will be sending to the mockserver, and Mock response is the response that the mockserver will give you in return.
 
 ##### /delmock
 To delete a mockquery  
@@ -57,8 +47,7 @@ Send your request as
 with payloads if any
 
 #### Few more things about this server:
-1. You can also send the above slash commands without slack directly as an Http request. 
-Equivalent to the above slash commands, send the JSON with above details to-
+1. You can also send the above slash commands without slack directly as an Http request. Equivalent to the above slash commands, send the JSON with above details to-
 
         http//localhost:8080/_admin/_add/_team
         http//localhost:8080/_admin/_add/_schema
@@ -68,13 +57,11 @@ Equivalent to the above slash commands, send the JSON with above details to-
         http//localhost:8080/_admin/_del/_team
         http//localhost:8080/_admin/_del/_mock
         
-2. All the paths in the mock queries should be relative not absolute and 
-without query parameters. Query parameters should be added in a separate field
+2. All the paths in the mock queries should be relative not absolute and without query parameters. Query parameters should be added in a separate field
 
 3. The path can have directory names as a regular expression as should in the tutorial above
 
-4. Payloads can have strict checking type or normal checking. For more about how the
-payload comparison is happening, see https://github.com/skyscreamer/JSONassert
+4. Payloads can have strict checking type or normal checking. For more about how the payload comparison is happening, see https://github.com/skyscreamer/JSONassert
 
 5. Schema matching is done with the help of skyscreamer library, https://github.com/everit-org/json-schema
 
@@ -82,11 +69,9 @@ payload comparison is happening, see https://github.com/skyscreamer/JSONassert
 
 7. Query parameters can be a regular expression too.
 
-8. There is support of persistence in the server, you do not need to take snapshots
-of the redis server as well.
+8. There is support of persistence in the server, you do not need to take snapshots of the redis server as well.
 
-9. The server responds very fast as all queries, and the whole database is in memory. Persistence
-is added via AOF techniques as used by redis.
+9. The server responds very fast as all queries, and the whole database is in memory. Persistence is added via AOF techniques as used by redis.
 
 10. log.log contains all the logs. and the major operations are in operations.log file
 
@@ -96,7 +81,7 @@ is added via AOF techniques as used by redis.
 
 
 #### Also as of now
-no
+
 1. Mock Response is not validated anytime, so if response string is not valid, corresponding http response may not be valid.
 
 2. Regex on methods are not there.
