@@ -2,7 +2,7 @@ package com.mock.server;
 
 public class DirName implements Directory {
 
-    private String name;
+    private final String name;
 
     public DirName(String name){
         this.name=name;

@@ -4,8 +4,8 @@ import java.util.regex.Pattern;
 
 public class DirPattern implements Directory {
 
-    private String name;
-    private Pattern pattern;
+    private final String name;
+    private final Pattern pattern;
 
     DirPattern(String name, Pattern pattern) {
         this.name=name;

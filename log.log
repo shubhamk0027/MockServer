@@ -1,0 +1,29 @@
+216  [main] INFO  com.mock.server.Application - Greetings from MockServer! 
+829  [main] INFO  com.mock.server.Application - Starting Application on sparrow with PID 7176 (/home/shubham/IdeaProjects/Mock Server/target/classes started by shubham in /home/shubham/IdeaProjects/Mock Server) 
+830  [main] INFO  com.mock.server.Application - No active profile set, falling back to default profiles: default 
+1786 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http) 
+1791 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"] 
+1792 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] 
+1792 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.35] 
+1839 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext 
+1839 [main] INFO  o.s.web.context.ContextLoader - Root WebApplicationContext: initialization completed in 940 ms 
+1926 [main] INFO  org.redisson.Version - Redisson 3.10.4 
+2104 [redisson-netty-1-32] INFO  o.r.c.pool.MasterConnectionPool - 32 connections initialized for 127.0.0.1/127.0.0.1:6379 
+2103 [redisson-netty-1-3] INFO  o.r.c.p.MasterPubSubConnectionPool - 1 connections initialized for 127.0.0.1/127.0.0.1:6379 
+2142 [main] INFO  com.mock.server.ServiceFactory - ............................................................ 
+2142 [main] INFO  com.mock.server.ServiceFactory - LOADING OLD DATA... 
+2142 [main] INFO  com.mock.server.ServiceFactory - LOADING OLD DATA... 
+2142 [main] INFO  com.mock.server.ServiceFactory - LOADING OLD DATA... 
+2142 [main] INFO  com.mock.server.ServiceFactory - LOADING OLD DATA... 
+2142 [main] INFO  com.mock.server.ServiceFactory - LOADING OLD DATA... 
+2142 [main] INFO  com.mock.server.ServiceFactory - ............................................................ 
+2142 [main] INFO  com.mock.server.ServiceFactory - ............................................................ 
+2142 [main] INFO  com.mock.server.ServiceFactory - OLD DATA LOADED! 
+2142 [main] INFO  com.mock.server.ServiceFactory - ............................................................ 
+2143 [Thread-105] INFO  com.mock.server.ServiceFactory - Persistence Requested 
+2305 [main] INFO  o.s.s.c.ThreadPoolTaskExecutor - Initializing ExecutorService 'applicationTaskExecutor' 
+2412 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"] 
+2421 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path '' 
+2431 [main] INFO  com.mock.server.Application - Started Application in 2.113 seconds (JVM running for 2.931) 
+2432 [main] INFO  com.mock.server.Application - Greetings from mock server! 
+26627 [SpringContextShutdownHook] INFO  o.s.s.c.ThreadPoolTaskExecutor - Shutting down ExecutorService 'applicationTaskExecutor' 

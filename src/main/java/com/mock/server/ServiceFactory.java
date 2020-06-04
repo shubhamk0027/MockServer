@@ -7,10 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.rmi.MarshalException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,7 @@ public class ServiceFactory {
     private final Persistence persistence;
     private final int maxTries;
     private boolean isloading;
+    private final int KEYLEN =64;
 
     private ServiceFactory(
             Verifier verifier,
@@ -95,15 +98,38 @@ public class ServiceFactory {
 
 
     public String createKey(String teamName){
-        String key = "API-KEY-OF-"+teamName;
+        byte[] bytes = new byte[KEYLEN/8];
+        new SecureRandom().nextBytes(bytes);
+        String key = DatatypeConverter.printHexBinary(bytes).toLowerCase();
         logger.info("Key generated for team: "+teamName+" = "+key);
         return key;
     }
 
     // admin functions
     public synchronized String createTeam(String body) throws JsonProcessingException, IllegalArgumentException {
-        CreateTeamQuery  createTeamQuery = mapper.readValue(body,CreateTeamQuery.class);
 
+        if(isloading){
+            int i=0;
+            for(;i<body.length();i++) if(body.charAt(i)==' ') {
+                i++;
+                break;
+            }
+            String apiKey=body.substring(0,i-1);
+            int j=i;
+            for(;i<body.length();i++) if(body.charAt(i)==' '){
+                i++;
+                break;
+            }
+            String teamName =body.substring(j,i-1);
+            String adminId = body.substring(i,body.length()-1);
+            MockServer mockServer = new MockServer(redisClient,verifier,new PayloadsAndSchema());
+            DevTeam newDevTeam = new DevTeam(apiKey,teamName,adminId,mockServer);
+            nameTeamMap.put(teamName,newDevTeam);
+            keyTeamMap.put(apiKey,newDevTeam);
+            return apiKey;
+        }
+
+        CreateTeamQuery  createTeamQuery = mapper.readValue(body,CreateTeamQuery.class);
         if(nameTeamMap.containsKey(createTeamQuery.teamName)) throw new IllegalArgumentException("Team Name exists. Choose a different Team Name!");
         String apiKey = createKey(createTeamQuery.teamName);
 
@@ -112,9 +138,9 @@ public class ServiceFactory {
         nameTeamMap.put(createTeamQuery.teamName,newDevTeam);
         keyTeamMap.put(apiKey,newDevTeam);
 
-        if(!isloading) for(int i=0;i<maxTries;i++){
+        for(int i=0;i<maxTries;i++){
             try{
-                persistence.add("+T "+mapper.writeValueAsString(createTeamQuery));
+                persistence.add("+T "+apiKey+" "+createTeamQuery.teamName+" "+createTeamQuery.adminId);
                 break;
             }catch(InterruptedException e){
                 e.getStackTrace();
@@ -151,8 +177,10 @@ public class ServiceFactory {
         if(!nameTeamMap.containsKey(createTeamQuery.teamName))
             throw new IllegalArgumentException("This Team Name is invalid!");
 
-        if(!nameTeamMap.get(createTeamQuery.teamName).getAdminId().equals(createTeamQuery.adminId))
+        if(!nameTeamMap.get(createTeamQuery.teamName).getAdminId().equals(createTeamQuery.adminId)){
+            logger.info("Actual "+nameTeamMap.get(createTeamQuery.teamName).getAdminId()+" but "+createTeamQuery.adminId);
             throw new IllegalAccessException("Only the Admin can have acess the api key!");
+        }
 
         return nameTeamMap.get(createTeamQuery.teamName).getKey();
     }
