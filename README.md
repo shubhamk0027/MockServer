@@ -97,7 +97,7 @@ is added via AOF techniques as used by redis.
 
 #### Also as of now
 
-1. There is no check Mock Response is not validated anytime, so if response string is not valid, corresponding http response may also be valid.
+1. Mock Response is not validated anytime, so if response string is not valid, corresponding http response may also be valid.
 
 2. Regex on methods are not there.
 
