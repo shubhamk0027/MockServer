@@ -21,7 +21,7 @@ Go through this quick tutorial below to know it better.
 (https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing)
 
 #### Slash Commands Supported    
-####/addteam
+##### /addteam
 to create a new team. It will provide you with a secret team token. 
 This secret team key will be used to send and add mock queries to this mock server.
 
