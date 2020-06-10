@@ -11,7 +11,7 @@ parameters.
 
 It also uses redis to store and reply the big responses efficiently. So you can have responses with huge response body, without any performance issues. 
 
-Use the following slash command:
+
 #### TLDR;
 
 Go through this quick [tutorial](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) below to know it better.
