@@ -6,15 +6,14 @@ This MockServer comes to the rescue by helping you create a fake server that wil
 
 ### How to use it?
 
-You can either set up the slack bot or send queries directly. Run this with [slack bot](https://github.com/shubhamk0027/SlackBot) after adding the bearer token in MessagePoster class and adding bearer token and slack client token in the environment 
-parameters. 
+You can either set up the slack bot or send queries directly. Run this with [slack bot](https://github.com/shubhamk0027/SlackBot) after adding the bearer token in MessagePoster class and adding bearer token and slack client token in the environment parameters. 
 
 It also uses redis to store and reply the big responses efficiently. So you can have responses with huge response body, without any performance issues. 
 
 
 #### TLDR;
 
-Go through this quick [tutorial](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) below to know it better.
+Go through this quick [tutorial](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) to understand how to use it.
 
 
 #### Slash Commands Supported    
@@ -42,7 +41,7 @@ To get back the lost key. This command can only be used by the admin.
 #### How to send your request to mock server in your application?
 Send your request as 
         
-        http//localhost:8080/TEAM-SECRET-KEY/your/path/here?any=query&parameters=1
+        http//localhost:8080/TEAM-SECRET-KEY/your/path/here?any=query&parameters
         
 with payloads if any
 
