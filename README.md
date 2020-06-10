@@ -6,7 +6,7 @@ This MockServer comes to the rescue by helping you create a fake server that wil
 
 ### How to use it?
 
-You can either set up the slack bot or send queries directly. Run this with slack bot (https://github.com/shubhamk0027/SlackBot) after adding the bearer token in MessagePoster class and adding bearer token and slack client token in the environment 
+You can either set up the slack bot or send queries directly. Run this with [slack bot](https://github.com/shubhamk0027/SlackBot) after adding the bearer token in MessagePoster class and adding bearer token and slack client token in the environment 
 parameters. 
 
 It also uses redis to store and reply the big responses efficiently. So you can have responses with huge response body, without any performance issues. 
@@ -14,8 +14,8 @@ It also uses redis to store and reply the big responses efficiently. So you can 
 Use the following slash command:
 #### TLDR;
 
-Go through this quick tutorial below to know it better.
-(https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing)
+Go through this quick [tutorial](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) below to know it better.
+
 
 #### Slash Commands Supported    
 ##### /addteam
