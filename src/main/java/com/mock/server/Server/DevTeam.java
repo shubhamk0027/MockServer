@@ -1,12 +1,13 @@
-package com.mock.server;
+package com.mock.server.Server;
 
 public class DevTeam {
+
     private final String key;
     private final String teamName;
     private final String adminId;
     private final MockServer mockServer;
 
-    DevTeam(String key, String teamName, String adminId, MockServer mockServer){
+    public DevTeam(String key, String teamName, String adminId, MockServer mockServer){
         this.key=key;
         this.teamName=teamName;
         this.adminId=adminId;

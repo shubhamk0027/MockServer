@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.Server;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,5 +1,6 @@
-package com.mock.server;
+package com.mock.server.Servlet;
 
+import com.mock.server.ServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,15 +16,19 @@ import java.util.Scanner;
 
 
 @Service
-class AdminServlet extends HttpServlet {
+public class OperationsServlet extends HttpServlet {
 
-    public static final Logger logger= LoggerFactory.getLogger(Servlet.class);
+    public static final Logger logger= LoggerFactory.getLogger(OperationsServlet.class);
     private final ServiceFactory serviceFactory;
 
-    AdminServlet(ServiceFactory serviceFactory){
+    OperationsServlet(ServiceFactory serviceFactory){
         this.serviceFactory=serviceFactory;
     }
 
+
+    // .useDelimiter("\\A")
+    // Now the scanner set as delimiter the [Regexp for \A][1]
+    // \A stands for :start of a string!
     private String getBody(HttpServletRequest request) throws IOException {
         Scanner s = new Scanner(request.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
@@ -64,14 +69,14 @@ class AdminServlet extends HttpServlet {
                     logger.info("Received Create Team Request!");
                     String response = serviceFactory.createTeam(body);
                     PrintWriter out = resp.getWriter();
-                    out.write(response);
+                    out.write("Your Team Key "+response);
                     break;
                 }
                 case "_get/_key":{
                     logger.info("Received Get Key Request!");
                     String response = serviceFactory.getApiKey(body);
                     PrintWriter out = resp.getWriter();
-                    out.write(response);
+                    out.write("Your Team Key "+response);
                     break;
                 }
                 case "_del/_team":{
@@ -101,4 +106,17 @@ class AdminServlet extends HttpServlet {
         }
     }
 
+
 }
+
+//    Servlets are API but RESTful is not.
+//    RESTful web service can use Servlets as there implementation but vice versa is not true.
+
+/*
+ * This servlet is quite reliable,
+ * Default destroy method will be
+ * Called by the servlet container to indicate to a servlet that the servlet is being taken out of service.
+ * This method is only called once all threads within the servlet's service method have exited or after a
+ * timeout period has passed. After the servlet container calls this method, it will not call the service
+ * method again on this servlet.
+ */

@@ -1,11 +1,11 @@
-package com.mock.server;
+package com.mock.server.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MockSchema {
+public class MockSchemaQuery {
 
-    private static final Logger logger = LoggerFactory.getLogger(MockSchema.class);
+    private static final Logger logger = LoggerFactory.getLogger(MockSchemaQuery.class);
 
     private String teamKey;
     private Method method = Method.POST;
@@ -34,32 +34,32 @@ public class MockSchema {
 
     public String getTeamKey(){ return teamKey; }
 
-    public MockSchema setTeamKey(String teamKey){
+    public MockSchemaQuery setTeamKey(String teamKey){
         this.teamKey=teamKey;
         return this;
     }
 
-    public MockSchema setPath(String path) {
+    public MockSchemaQuery setPath(String path) {
         this.path=path;
         return this;
     }
 
-    public MockSchema setMethod(Method method) {
+    public MockSchemaQuery setMethod(Method method) {
         this.method = method;
         return this;
     }
 
-    public MockSchema setSchema(String schema) {
+    public MockSchemaQuery setSchema(String schema) {
         this.schema = schema;
         return this;
     }
 
-    public MockSchema setQueryParameters(String queryParameters) {
+    public MockSchemaQuery setQueryParameters(String queryParameters) {
         this.queryParameters = queryParameters;
         return this;
     }
 
-    public MockSchema setQueryParametersRegex(String queryParametersRegex) {
+    public MockSchemaQuery setQueryParametersRegex(String queryParametersRegex) {
         this.queryParametersRegex = queryParametersRegex;
         return this;
     }

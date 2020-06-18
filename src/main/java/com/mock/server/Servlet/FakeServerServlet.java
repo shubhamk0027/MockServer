@@ -1,6 +1,9 @@
-package com.mock.server;
+package com.mock.server.Servlet;
 
-import org.json.JSONObject;
+import com.mock.server.Query.Method;
+import com.mock.server.Query.MockResponse;
+import com.mock.server.ServiceFactory;
+import com.mock.server.Server.Verifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,13 +25,13 @@ import java.util.Scanner;
  */
 
 @Service
-class Servlet extends HttpServlet {
+public class FakeServerServlet extends HttpServlet {
 
-    public static final Logger logger= LoggerFactory.getLogger(Servlet.class);
+    public static final Logger logger= LoggerFactory.getLogger(FakeServerServlet.class);
     private final ServiceFactory serviceFactory;
     private final Verifier verifier;
 
-    Servlet(ServiceFactory serviceFactory, Verifier verifier){
+    FakeServerServlet(ServiceFactory serviceFactory, Verifier verifier){
         this.serviceFactory=serviceFactory;
         this.verifier=verifier;
     }
@@ -113,8 +116,7 @@ class Servlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try{
-            logger.info("........................Servlet in GET Invoked!");
-            getTypeResponse(req,resp,Method.GET.val);
+            getTypeResponse(req,resp, Method.GET.val);
         } catch( Exception e){
             e.getStackTrace();
             logger.info(e.getMessage());
@@ -127,7 +129,6 @@ class Servlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
-            logger.info("........................Servlet in POST Invoked!");
             postTypeResponse(req,resp,Method.POST.val);
         } catch( Exception e){
             e.getStackTrace();
@@ -141,7 +142,6 @@ class Servlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try{
-            logger.info("........................Servlet in PUT Invoked!");
             postTypeResponse(req,resp,Method.PUT.val);
         } catch( Exception e){
             e.getStackTrace();
@@ -155,7 +155,6 @@ class Servlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
-            logger.info("........................Servlet in DEL Invoked!");
             postTypeResponse(req,resp,Method.DEL.val);
         } catch( Exception e){
             e.getStackTrace();
@@ -169,7 +168,6 @@ class Servlet extends HttpServlet {
     @Override
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try{
-            logger.info("........................Servlet in HEAD Invoked!");
             getTypeResponse(req,resp,Method.HEAD.val);
         } catch( Exception e){
             e.getStackTrace();
@@ -183,7 +181,6 @@ class Servlet extends HttpServlet {
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
-            logger.info("........................Servlet in OPTIONS Invoked!");
             getTypeResponse(req,resp,Method.OPTIONS.val);
         } catch( Exception e){
             e.getStackTrace();
@@ -197,7 +194,6 @@ class Servlet extends HttpServlet {
     @Override
     protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try{
-            logger.info("........................Servlet in TRACE Invoked!");
             getTypeResponse(req,resp,Method.TRACE.val);
         } catch( Exception e){
             e.getStackTrace();
@@ -209,7 +205,3 @@ class Servlet extends HttpServlet {
     }
 
 }
-
-/*
- * https://tomcat.apache.org/tomcat-5.5-doc/servletapi/javax/servlet/http/HttpServlet.html
- */

@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.Server;
 
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
@@ -18,7 +18,7 @@ public class PayloadsAndSchema {
     private final ArrayList<POSTData> postData ;
     private int payLoadCount;
 
-    PayloadsAndSchema(){
+    public PayloadsAndSchema(){
         postData = new ArrayList <>();
         payLoadCount= 0;
     }
@@ -41,7 +41,7 @@ public class PayloadsAndSchema {
     }
 
     public void deletePayload(int key, JSONObject object) throws IllegalArgumentException {
-        if(key>postData.size()) throw new IllegalArgumentException("No Query Exists of this type!");
+        if(key>postData.size()) throw new IllegalArgumentException("No Mock Query Exists of this Payload!");
         postData.get(key-1).deletePayload(object);
     }
 

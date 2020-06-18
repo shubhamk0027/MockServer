@@ -1,1 +1,7 @@
-INF Persisting data started! 
++T abb68da33d87dadb devTeam U014WK3771S 
++T 4e7fc1d157315a0a marketingTeam U014WK3771S 
+-T {"teamKey":"4e7fc1d157315a0a","adminId":"U014WK3771S"} 
++M {"mockRequest":{"teamKey":"abb68da33d87dadb","method":"GET","path":"/hello/[a-zA-Z]+/price","jsonBody":null,"queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{ \"msg\":\"Done\",\"price\"=2000}","headers":{}}}
+-M {"mockRequest":{"teamKey":"abb68da33d87dadb","method":"GET","path":"/hello/[a-zA-Z]+/price","jsonBody":null,"queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{ \"msg\":\"Done\",\"price\"=2000}","headers":{}}}
++T fc77617c62fe7c43 devTeam2 U014WK3771S 
++M {"mockRequest":{"teamKey":"abb68da33d87dadb","method":"GET","path":"/hello/[a-zA-Z]+/price","jsonBody":null,"queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{\"price\":2000}","headers":{}}} 

@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

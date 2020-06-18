@@ -1,206 +1,45 @@
 package com.mock.server;
 
+import com.mock.server.Servlet.OperationsServlet;
+import com.mock.server.Servlet.FakeServerServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
-import java.io.File;
-
 @SpringBootApplication
 public class Application {
 
-    private final AdminServlet adminServlet;
-    private final Servlet servlet;
+    private final OperationsServlet operationsServlet;
+    private final FakeServerServlet fakeServerServlet;
 
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
-    Application(
-            AdminServlet adminServlet,
-            Servlet servlet) {
-        this.adminServlet = adminServlet;
-        this.servlet = servlet;
-    }
-
-
-    @Bean
-    public ServletRegistrationBean <AdminServlet> AdminservletRegistrationBean() {
-        return new ServletRegistrationBean <>(adminServlet, "/_admin/*");
+    Application( OperationsServlet operationsServlet, FakeServerServlet fakeServerServlet) {
+        this.operationsServlet = operationsServlet;
+        this.fakeServerServlet = fakeServerServlet;
     }
 
     @Bean
-    public ServletRegistrationBean <Servlet> servletRegistrationBean() {
-        return new ServletRegistrationBean <>(servlet, "/*");
+    public ServletRegistrationBean <OperationsServlet> OperationsServletRegistrationBean() {
+        return new ServletRegistrationBean <>(operationsServlet, "/_admin/*");
+    }
+
+    @Bean
+    public ServletRegistrationBean <FakeServerServlet> FakeServerServletRegistrationBean() {
+        return new ServletRegistrationBean <>(fakeServerServlet, "/*");
     }
 
 
     public static void main(String[] args) {
-        logger.info("Greetings from MockServer!");
         SpringApplication.run(Application.class, args);
-    }
-
-                /*
-    public void addQueries() throws JsonProcessingException {
-            {
-                "properties":{
-                    "city": {
-                        "type":"string"
-                        },
-                    "name":{
-                        "type":"string"
-                        },
-                    "age":{
-                        "type":"number"
-                        }
-                }
-           }
-           */
-
-        // https://github.com/everit-org/json-schema
-        // strict schema check allowed
-/*
-        MockSchema mockSchema = new MockSchema()
-                .setMethod(Method.POST)                                     // Methods that do not accept any payloads will give error!
-                .setSchema("{\n" +
-                        "                \"properties\":{\n" +
-                        "                    \"city\": {\n" +
-                        "                        \"type\":\"string\"\n" +
-                        "                        },\n" +
-                        "                    \"name\":{\n" +
-                        "                        \"type\":\"string\"\n" +
-                        "                        },\n" +
-                        "                    \"age\":{\n" +
-                        "                        \"type\":\"number\"\n" +
-                        "                        }\n" +
-                        "                }\n" +
-                        "           }")
-                .strictCheckMode(true)
-                .setPath("/products/cardboard");
-
-        mockServer.addSchema(mockSchema);
-
-        MockQuery mockQuery;
-        try {
-            // will give error, age should be a number according to schema!
-            mockQuery = new MockQuery().inCase(
-                    new MockRequest()
-                            .hasPath("/products/cardboard/")
-                            .hasMethod(Method.POST)
-                            .hasBody("{\"city\":\"chicago\",\"name\":\"jon doe\",\"age\":\"22\"}"))
-                    .respondWith(
-                            new MockResponse()
-                                    .withBody("{\"Info\":\"Simple Post Request\"}")
-                                    .withStatus(200)
-                                    .withHeader("browser", "mozilla")
-                    );
-            mockQuery.log();
-            mockServer.addMockQuery(mockQuery);
-        }catch(Exception e){
-            e.getStackTrace();
-            logger.info(e.getMessage());
-        }
-
-        mockQuery = new MockQuery().inCase(
-                new MockRequest()
-                        .hasPath("/products/cardboard/")
-                        .hasMethod(Method.POST)
-                        .hasBody("{\"city\":\"chicago\",\"name\":\"jon doe\",\"age\":22}"))
-                .respondWith(
-                        new MockResponse()
-                                .withBody("{\"Info\":\"Simple Post Request\"}")
-                                .withStatus(200)
-                                .withHeader("browser", "mozilla")
-                );
-        mockQuery.log();
-        mockServer.addMockQuery(mockQuery);
-
-        // Same post query but with a different payload
-        mockQuery = new MockQuery().inCase(
-                new MockRequest()
-                        .hasPath("/products/cardboard/")
-                        .hasMethod(Method.POST)
-                        .hasBody("{\"city\":\"kolkata\",\"name\":\"bapu\",\"age\":95}"))
-                .respondWith(
-                        new MockResponse()
-                                .withBody("{\"Info\":\"Simple Post Request\"}")
-                                .withStatus(200)
-                                .withHeader("browser", "firefox")
-                );
-        mockQuery.log();
-        mockServer.addMockQuery(mockQuery);
-
-        mockQuery = new MockQuery().inCase(
-                new MockRequest()
-                        .hasPath("/products/[a-zA-Z]+/")
-                        .hasMethod(Method.POST)
-                        .hasBody("{\"city\":\"chicago\",\"name\":\"jon doe\",\"age\":\"22\"}"))
-                .respondWith(
-                        new MockResponse()
-                                .withBody("{\"Info\":\"Post request with regex returning two headers\"}")
-                                .withStatus(200)
-                                .withHeader("browser", "chrome")
-                                .withHeader("at", "night")
-                );
-        mockQuery.log();
-        mockServer.addMockQuery(mockQuery);
-
-        mockQuery = new MockQuery().inCase(
-                new MockRequest()
-                        .hasPath("/products/pro[a-zA-Z]+/price")
-                        .hasMethod(Method.GET))
-                .respondWith(
-                        new MockResponse()
-                                .withBody("{\"Info\":\"Simple GET request with headers and regex\"}")
-                                .withStatus(200)
-                                .withHeader("browser", "mozilla")
-                );
-        mockQuery.log();
-        mockServer.addMockQuery(mockQuery);
-
-        mockQuery = new MockQuery().inCase(
-                new MockRequest()
-                        .hasPath("/products/pro[a-zA-Z]+/price")
-                        .hasMethod(Method.GET)
-                        .hasQueryParameters("?a=1&b=2"))
-                .respondWith(
-                        new MockResponse()
-                                .withBody("{\"Info\":\"Simple GET request with multiple headers and query parameters\"}")
-                                .withStatus(200)
-                                .withHeader("browser", "mozilla")
-                                .withHeader("time", "12:00 AM")
-                );
-        mockQuery.log();
-        mockServer.addMockQuery(mockQuery);
-
-        mockQuery = new MockQuery().inCase(
-                new MockRequest()
-                        .hasPath("/products/pro[a-zA-Z]+/price")
-                        .hasMethod(Method.GET)
-                        .hasQueryParametersRegex("?a=[0-9]&b=[0-9]"))
-                .respondWith(
-                        new MockResponse()
-                                .withBody("{\"Info\":\"Simple GET request with multiple headers and regex in query parameters\"}")
-                                .withStatus(200)
-                                .withHeader("browser", "mozilla")
-                                .withHeader("time", "12:00 AM")
-                );
-        mockQuery.log();
-        mockServer.addMockQuery(mockQuery);
-    }*/
-
-
-    @Bean
-    CommandLineRunner commandLineRunner() {
-        return (args) -> {
-            logger.info("Greetings from mock server!");
-            // addQueries();
-        };
+        logger.info("Mock Server Ready!");
     }
 
 }
+
 /*
  * https://github.com/everit-org/json-schema
  * body should be of Json Content Type only

@@ -1,6 +1,9 @@
-package com.mock.server;
+package com.mock.server.Server;
 
-import org.json.JSONObject;
+import com.mock.server.Query.Method;
+import com.mock.server.URITree.DirName;
+import com.mock.server.URITree.DirPattern;
+import com.mock.server.URITree.Directory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -8,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 
 @Component
 public class Verifier {
@@ -28,6 +32,7 @@ public class Verifier {
             throws IllegalStateException, PatternSyntaxException {
 
         if(path == null || path.length() == 0) throw new IllegalStateException("Path can not be a null or empty");
+        if(path.charAt(0)!='/') throw new IllegalStateException("Path must be relative!");
 
         ArrayList <Directory> pathList = new ArrayList <>();
         pathList.add(new DirName(method.val));
@@ -72,7 +77,7 @@ public class Verifier {
         if(dir.length() == 0) throw new IllegalStateException("Directory Name can not be empty!");
         boolean isDirString = true;
         for(int j = 0; j < dir.length(); j++) {
-            if(!Character.isLetterOrDigit(dir.charAt(j)) && dir.charAt(j)!='-' && dir.charAt(j)!='_') {
+            if(!Character.isLetterOrDigit(dir.charAt(j)) && dir.charAt(j)!='-' && dir.charAt(j)!='_' && dir.charAt(j)!='.') {
                 isDirString = false;
                 break;
             }
@@ -88,6 +93,7 @@ public class Verifier {
 
     /**
      * For methods not supporting particular members like request body for GET, the actual server will ignore them.
+     * This verification is already done in the slack bot
      */
 
     public  void verifyMethodAndQuery(Method method, String jsonBody, String queryParameters, String queryParametersRegex) {

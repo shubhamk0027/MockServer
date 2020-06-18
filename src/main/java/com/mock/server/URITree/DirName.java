@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.URITree;
 
 public class DirName implements Directory {
 

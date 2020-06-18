@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.URITree;
 
 public interface Directory {
 
@@ -7,4 +7,3 @@ public interface Directory {
     public String getDirName();
 
 }
-;

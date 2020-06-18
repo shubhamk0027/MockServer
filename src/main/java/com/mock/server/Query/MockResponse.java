@@ -1,28 +1,25 @@
-package com.mock.server;
-
-import org.json.JSONObject;
+package com.mock.server.Query;
 
 import java.util.HashMap;
 import java.util.Map;
 
+// this jsonBody will be converted to the string before inserting it to the redis
+// before insertion it will go through a schema check
+// these operations are not atomic, it is possible that path is inserted but the json schema does not match!
+// in that case the payload will not be added and so there will not be any effect except few extra nodes on the URItree
+
 public class MockResponse {
+
     private int status;
     private String jsonBody;
     private Map <String,String> headers;
 
-    // this jsonBody will be converted to the string before inserting it to the redis
-    // before insertion it will go through a schema check
-    // these operations are not atomic,
-    // it is possible that path is inserted but the json schema does not match!
-
     public int getStatus() {
         return status;
     }
-
     public String getJsonBody() {
         return jsonBody;
     }
-
     public Map <String, String> getHeaders() {
         return headers;
     }

@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.Server;
 
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;

@@ -1,11 +1,11 @@
-package com.mock.server;
+package com.mock.server.URITree;
 
 import java.util.HashMap;
 
 public class TreeNode {
 
     private int id;
-    private Directory directory;
+    private final Directory directory;
     private final HashMap <String, TreeNode> child = new HashMap <>();
 
     public TreeNode(Directory dir) {

@@ -1,269 +1,303 @@
 package com.mock.server;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mock.server.Query.*;
+import com.mock.server.Server.DevTeam;
+import com.mock.server.Server.MockServer;
+import com.mock.server.Server.PayloadsAndSchema;
+import com.mock.server.Server.Verifier;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.MarshalException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+/*
+ Data is not deleted from redis in case of team deletion, since the path will simply not exists
+ In case the same path and same team name are encountered again, they will be overwritten
+ */
 @Service
 public class ServiceFactory {
 
+    // Persistence via Appender
+    private static final Logger appender = LoggerFactory.getLogger("OperationsLogger");
     private static final Logger logger = LoggerFactory.getLogger(ServiceFactory.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final int KEY_LEN = 64;
 
-    private final Map <String,DevTeam> keyTeamMap;                  // key-> team
-    private final Map <String,DevTeam> nameTeamMap;                 // teamName ->key
+    private final ObjectFactory<PayloadsAndSchema> payloadSchemaFactory ;
+    private final ConcurrentHashMap <String, DevTeam> keyTeamMap;
+    private final ConcurrentHashMap <String, DevTeam> nameTeamMap;
 
     private final Verifier verifier;
     private final RedisClient redisClient;
-    private final Persistence persistence;
-    private final int maxTries;
-    private boolean isloading;
-    private final int KEYLEN =64;
+    private boolean isLoading;
 
     private ServiceFactory(
             Verifier verifier,
             RedisClient redisClient,
-            Persistence persistence,
-            @Value("${maxTries}") int maxTries){
+            ObjectFactory<PayloadsAndSchema> payloadSchemaFactory) throws IllegalAccessException, InterruptedException, IOException {
 
-        this.verifier=verifier;
-        this.redisClient=redisClient;
-        this.persistence=persistence;
-        this.maxTries=maxTries;
+        this.verifier = verifier;
+        this.redisClient = redisClient;
+        this.payloadSchemaFactory=payloadSchemaFactory;
 
-        keyTeamMap = new HashMap <>();
-        nameTeamMap = new HashMap <>();
-        isloading=true;
+        keyTeamMap = new ConcurrentHashMap <>();
+        nameTeamMap = new ConcurrentHashMap <>();
+        isLoading = true;
 
-        logger.info("............................................................");
-        for(int i=0;i<5;i++) logger.info("LOADING OLD DATA...");
-        logger.info("............................................................");
-
-        loadOperations();
-        isloading=false;
-
-        logger.info("............................................................");
-        logger.info("OLD DATA LOADED!");
-        logger.info("............................................................");
-
-        Thread persistThread = new Thread(()->{
-            try {
-                logger.info("Persistence Requested");
-                persistence.run();
-            } catch(InterruptedException e) {
-                e.printStackTrace();
-                logger.info("Persistence Stopped!");
-            }
-        });
-        persistThread.start();
-    }
-
-    // Load earlier operations
-    public void loadOperations(){
-        try{
-            FileInputStream fstream = new FileInputStream("operations.log");
-            BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-            String strLine;
-            while ((strLine = br.readLine()) != null)   {
-                if(strLine.charAt(0)=='I'); // and INFORMATION!
-                else if(strLine.charAt(0)=='+'){
-                    if(strLine.charAt(1)=='T') createTeam(strLine.substring(3));
-                    else if(strLine.charAt(1)=='M') addMockQuery(strLine.substring(3));
-                    else if(strLine.charAt(1)=='S') addSchema(strLine.substring(3));
-                    else throw new IllegalStateException("Can't read the earlier operations!");
-                }else {
-                    if(strLine.charAt(1)=='T') deleteTeam(strLine.substring(3));
-                    else if(strLine.charAt(2)=='M') deleteMockQuery(strLine.substring(3));
-                }
-            }
-            fstream.close();
-        } catch (Exception e) {
-            logger.info("Error in reading the file! Cant load all of the old operations!");
+        try {
+            logger.info("LOADING OLD DATA...");
+            int total = loadOperations();
+            logger.info("LOADED "+total+" OPERATIONS SUCCESSFULLY!");
+        }catch( IllegalAccessException | IOException e) {
+            logger.info("Error in reading the file Operations!");
+            throw e;
         }
+
+        isLoading = false;
+
     }
 
 
-    public String createKey(String teamName){
-        byte[] bytes = new byte[KEYLEN/8];
+    // Load operations from the appender/operations.log file
+    public int  loadOperations() throws IllegalAccessException, IOException {
+        FileInputStream fstream = new FileInputStream("operations.log");
+        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+        String strLine;
+        int total=0;
+
+        while((strLine = br.readLine()) != null) {
+            if(strLine.charAt(0) == '+') {
+                if(strLine.charAt(1) == 'T') createTeam(strLine.substring(3));
+                else if(strLine.charAt(1) == 'M') addMockQuery(strLine.substring(3));
+                else if(strLine.charAt(1) == 'S') addSchema(strLine.substring(3));
+                else throw new IllegalStateException("Can't read the earlier operations!");
+                total++;
+            }else{
+                if(strLine.charAt(1) == 'T') deleteTeam(strLine.substring(3));
+                else deleteMockQuery(strLine.substring(3));
+                total++;
+            }
+        }
+        fstream.close();
+
+
+        return total;
+    }
+
+
+    // since the number of teams will be limited, api key generated will be unique
+    public String createKey(String teamName) {
+        byte[] bytes = new byte[KEY_LEN / 8];
         new SecureRandom().nextBytes(bytes);
         String key = DatatypeConverter.printHexBinary(bytes).toLowerCase();
-        logger.info("Key generated for team: "+teamName+" = "+key);
+        logger.info("Key generated for team: " + teamName + " = " + key);
         return key;
     }
 
-    // admin functions
-    public synchronized String createTeam(String body) throws JsonProcessingException, IllegalArgumentException {
 
-        if(isloading){
-            int i=0;
-            for(;i<body.length();i++) if(body.charAt(i)==' ') {
-                i++;
-                break;
-            }
-            String apiKey=body.substring(0,i-1);
-            int j=i;
-            for(;i<body.length();i++) if(body.charAt(i)==' '){
-                i++;
-                break;
-            }
-            String teamName =body.substring(j,i-1);
-            String adminId = body.substring(i,body.length()-1);
-            MockServer mockServer = new MockServer(redisClient,verifier,new PayloadsAndSchema());
-            DevTeam newDevTeam = new DevTeam(apiKey,teamName,adminId,mockServer);
-            nameTeamMap.put(teamName,newDevTeam);
-            keyTeamMap.put(apiKey,newDevTeam);
+    /**
+     * Admin Function Operation 1 Create Team Query
+     *
+     * @param body String of Type "ApiKey TeamName adminId" for a loading operation OR a JSON string of Create Team Query if not a loading operation
+     * @return the apiKey
+     * @throws JsonProcessingException  Wrong Json Query
+     * @throws IllegalArgumentException Team Name is Exists
+     */
+    public String createTeam(String body) throws JsonProcessingException, IllegalArgumentException {
+        if(isLoading) {
+            int i = 0;
+            for(; i < body.length(); i++)
+                if(body.charAt(i) == ' ') {
+                    i++;
+                    break;
+                }
+            String apiKey = body.substring(0, i - 1);
+            int j = i;
+            for(; i < body.length(); i++)
+                if(body.charAt(i) == ' ') {
+                    i++;
+                    break;
+                }
+            String teamName = body.substring(j, i - 1);
+            String adminId = body.substring(i, body.length() - 1);
+            MockServer mockServer = new MockServer(redisClient, verifier, payloadSchemaFactory.getObject());
+            mockServer.setTeamName(teamName);
+            DevTeam newDevTeam = new DevTeam(apiKey, teamName, adminId, mockServer);
+            nameTeamMap.put(teamName, newDevTeam);
+            keyTeamMap.put(apiKey, newDevTeam);
             return apiKey;
         }
 
-        CreateTeamQuery  createTeamQuery = mapper.readValue(body,CreateTeamQuery.class);
-        if(nameTeamMap.containsKey(createTeamQuery.teamName)) throw new IllegalArgumentException("Team Name exists. Choose a different Team Name!");
-        String apiKey = createKey(createTeamQuery.teamName);
+        CreateTeamQuery createTeamQuery = mapper.readValue(body, CreateTeamQuery.class);
+        if(nameTeamMap.containsKey(createTeamQuery.getTeamName()))
+            throw new IllegalArgumentException("Team Name exists. Choose a different Team Name!");
+        String apiKey = createKey(createTeamQuery.getTeamName());
 
-        MockServer mockServer = new MockServer(redisClient,verifier,new PayloadsAndSchema());
-        DevTeam newDevTeam = new DevTeam(apiKey,createTeamQuery.teamName,createTeamQuery.adminId,mockServer);
-        nameTeamMap.put(createTeamQuery.teamName,newDevTeam);
-        keyTeamMap.put(apiKey,newDevTeam);
-
-        for(int i=0;i<maxTries;i++){
-            try{
-                persistence.add("+T "+apiKey+" "+createTeamQuery.teamName+" "+createTeamQuery.adminId);
-                break;
-            }catch(InterruptedException e){
-                e.getStackTrace();
-            }
-        }
+        MockServer mockServer = new MockServer(redisClient, verifier, payloadSchemaFactory.getObject());
+        mockServer.setTeamName(createTeamQuery.getTeamName());
+        
+        DevTeam newDevTeam = new DevTeam(apiKey, createTeamQuery.getTeamName(), createTeamQuery.getAdminId(), mockServer);
+        nameTeamMap.put(createTeamQuery.getTeamName(), newDevTeam);
+        keyTeamMap.put(apiKey, newDevTeam);
+        appender.info("+T " + apiKey + " " + createTeamQuery.getTeamName() + " " + createTeamQuery.getAdminId());
         return apiKey;
     }
 
-    public synchronized void deleteTeam(String body) throws IllegalAccessException, JsonProcessingException{
-        DeleteTeamQuery  deleteTeamQuery = mapper.readValue(body,DeleteTeamQuery.class);
 
-        if(!keyTeamMap.containsKey(deleteTeamQuery.key))
+    /**
+     * Admin Operation 2-> Delete a team
+     * @param body JSON String of type DeleteQuery
+     * @throws IllegalAccessException  Not an admin
+     * @throws JsonProcessingException Wrong Query
+     */
+    public void deleteTeam(String body) throws IllegalAccessException, JsonProcessingException {
+
+        DeleteTeamQuery deleteTeamQuery = mapper.readValue(body, DeleteTeamQuery.class);
+
+        if(!keyTeamMap.containsKey(deleteTeamQuery.getTeamKey()))
             throw new IllegalArgumentException("No Team exists with this key!");
 
-        if(!keyTeamMap.get(deleteTeamQuery.key).getAdminId().equals(deleteTeamQuery.adminId))
+        if(!keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId().equals(deleteTeamQuery.getAdminId()))
             throw new IllegalAccessException("Only the Admin can delete a team!");
 
-        nameTeamMap.remove(keyTeamMap.get(deleteTeamQuery.key).getTeamName());
-        keyTeamMap.remove(deleteTeamQuery.key);
+        nameTeamMap.remove(keyTeamMap.get(deleteTeamQuery.getTeamKey()).getTeamName());
+        keyTeamMap.remove(deleteTeamQuery.getTeamKey());
 
-        if(!isloading) for(int i=0;i<maxTries;i++){
-            try{
-                persistence.add("-T "+mapper.writeValueAsString(deleteTeamQuery));
-                break;
-            }catch(InterruptedException e){
-                e.getStackTrace();
-            }
-        }
+        if(!isLoading) appender.info("-T " + mapper.writeValueAsString(deleteTeamQuery));
     }
 
-    public String getApiKey(String body) throws IllegalAccessException, JsonProcessingException {
-        CreateTeamQuery  createTeamQuery = mapper.readValue(body,CreateTeamQuery.class);
 
-        if(!nameTeamMap.containsKey(createTeamQuery.teamName))
+    /**
+     * Admin Operation 3 ->  Get the Api Key
+     * @param body JSON string of Create Team Query
+     * @return the Api key
+     * @throws IllegalAccessException  Not an admin
+     * @throws JsonProcessingException Wrong Query Format
+     */
+    public String getApiKey(String body) throws IllegalAccessException, JsonProcessingException {
+        CreateTeamQuery createTeamQuery = mapper.readValue(body, CreateTeamQuery.class);
+
+        if(!nameTeamMap.containsKey(createTeamQuery.getTeamName()))
             throw new IllegalArgumentException("This Team Name is invalid!");
 
-        if(!nameTeamMap.get(createTeamQuery.teamName).getAdminId().equals(createTeamQuery.adminId)){
-            logger.info("Actual "+nameTeamMap.get(createTeamQuery.teamName).getAdminId()+" but "+createTeamQuery.adminId);
+        if(!nameTeamMap.get(createTeamQuery.getTeamName()).getAdminId().equals(createTeamQuery.getAdminId())) {
+            logger.info("Actual " + nameTeamMap.get(createTeamQuery.getTeamName()).getAdminId() + " but " + createTeamQuery.getAdminId());
             throw new IllegalAccessException("Only the Admin can have acess the api key!");
         }
 
-        return nameTeamMap.get(createTeamQuery.teamName).getKey();
+        return nameTeamMap.get(createTeamQuery.getTeamName()).getKey();
     }
 
-    // developer team CRUD functions
-    public void addSchema(String body) throws JsonProcessingException, IllegalAccessException  {
-        MockSchema mockSchema = mapper.readValue(body,MockSchema.class);
 
-        if(!keyTeamMap.containsKey(mockSchema.getTeamKey()))
+    /**
+     * Admin Operation 4-> Add a schema
+     * @param body JSON string of MockSchema
+     * @throws JsonProcessingException Wrong Query
+     * @throws IllegalAccessException  Wrong API key
+     */
+    public void addSchema(String body) throws JsonProcessingException, IllegalAccessException {
+        MockSchemaQuery mockSchemaQuery = mapper.readValue(body, MockSchemaQuery.class);
+        if(!keyTeamMap.containsKey(mockSchemaQuery.getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
-
-        keyTeamMap.get(mockSchema.getTeamKey()).getMockServer().addSchema(mockSchema);
-        if(!isloading) for(int i=0;i<maxTries;i++){
-            try{
-                persistence.add("+S "+mapper.writeValueAsString(mockSchema));
-                break;
-            }catch(InterruptedException e){
-                e.getStackTrace();
-            }
-        }
+        keyTeamMap.get(mockSchemaQuery.getTeamKey()).getMockServer().addSchema(mockSchemaQuery);
+        if(!isLoading) appender.info("+S " + mapper.writeValueAsString(mockSchemaQuery));
     }
 
+
+    /**
+     * Admin Operation 5-> Add a Mock Query
+     * @param body JSON string of Mock Query
+     * @throws JsonProcessingException Wrong Query String
+     * @throws IllegalAccessException  Wrong API key
+     */
+    public void addMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
+        MockQuery mockQuery = mapper.readValue(body, MockQuery.class);
+        mockQuery.log();
+        if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
+            throw new IllegalAccessException("You seems to have a wrong API key!");
+        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery, false);
+        if(!isLoading) appender.info("+M " + mapper.writeValueAsString(mockQuery));
+    }
+
+
+    /**
+     * Admin Operation 6-> Get the schema corresponding to a path
+     * @param body JSON String of GetSchemaQuery
+     * @return Schema JSON as string
+     * @throws JsonProcessingException Wrong Query String
+     * @throws IllegalAccessException  Wrong API key
+     */
     public String getSchema(String body) throws JsonProcessingException, IllegalAccessException {
-        GetSchemaQuery getSchemaQuery = mapper.readValue(body,GetSchemaQuery.class);
+        GetSchemaQuery getSchemaQuery = mapper.readValue(body, GetSchemaQuery.class);
         getSchemaQuery.log();
 
         if(!keyTeamMap.containsKey(getSchemaQuery.getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
 
-        if(getSchemaQuery.getMethod()!= Method.POST && getSchemaQuery.getMethod()!= Method.PUT && getSchemaQuery.getMethod()!= Method.DEL)
+        if(getSchemaQuery.getMethod() != Method.POST && getSchemaQuery.getMethod() != Method.PUT && getSchemaQuery.getMethod() != Method.DEL)
             throw new IllegalArgumentException("Schema is only associated with POST, PUT AND DEL query!");
 
         return keyTeamMap.get(getSchemaQuery.getTeamKey()).getMockServer().getSchema(
-                verifier.getSimplePathList(getSchemaQuery.getPath(),getSchemaQuery.getMethod().val)
+                verifier.getSimplePathList(getSchemaQuery.getPath(), getSchemaQuery.getMethod().val)
         );
     }
 
-    public void addMockQuery(String body) throws JsonProcessingException, IllegalAccessException, InterruptedException {
-        MockQuery mockQuery = mapper.readValue(body,MockQuery.class);
-        mockQuery.log();
 
-        if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
-            throw new IllegalAccessException("You seems to have a wrong API key!");
-
-        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery,false);
-        if(!isloading) for(int i=0;i<maxTries;i++){
-            try{
-                persistence.add("+M "+mapper.writeValueAsString(mockQuery));
-                break;
-            }catch(InterruptedException e){
-                e.getStackTrace();
-                throw e;
-            }
-        }
-    }
-
+    /**
+     * Admin Operation 7-> Delete a Mock Query
+     * @param body JSON string of type DeleteMockQuery
+     * @throws JsonProcessingException Wrong Query String
+     * @throws IllegalAccessException  Wrong API key
+     */
     public void deleteMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
-        MockQuery mockQuery = mapper.readValue(body,MockQuery.class);
+        MockQuery mockQuery = mapper.readValue(body, MockQuery.class);
         mockQuery.log();
-
         if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
-
-        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery,true);
-        if(!isloading) for(int i=0;i<maxTries;i++){
-            try{
-                persistence.add("-M "+mapper.writeValueAsString(mockQuery)); // compress and write
-                break;
-            }catch(InterruptedException e){
-                e.getStackTrace();
-            }
-        }
+        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery, true);
+        if(!isLoading) appender.info("-M " + mapper.writeValueAsString(mockQuery)); // compress and write
     }
 
-    // Fake Server functions
-    public MockResponse postTypeResponse(String key, ArrayList<String> pathList,String body ) throws IllegalAccessException, JsonProcessingException {
-        logger.info("Received a Post request for key: "+key);
+
+    /**
+     * Fake Server Request Handler for POST Type Request
+     * @param key      API key
+     * @param pathList Absoulte path
+     * @param body     payload JSON String
+     * @return MockResponse at the path
+     * @throws IllegalAccessException  MockResponse does not exists or Wrong API Key
+     * @throws JsonProcessingException Wrong JSON payload or path does not exists. Response body is returned as a string as it is.
+     */
+    public MockResponse postTypeResponse(String key, ArrayList <String> pathList, String body) throws IllegalAccessException, JsonProcessingException {
+        logger.info("Received a Post request for key: " + key);
         if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
-        return keyTeamMap.get(key).getMockServer().postTypeResponse(pathList,new JSONObject(body));
+        return keyTeamMap.get(key).getMockServer().postTypeResponse(pathList, new JSONObject(body));
     }
 
-    public MockResponse getTypeResponse(String key, ArrayList<String> pathList) throws IllegalAccessException, JsonProcessingException {
-        logger.info("Received a Post request for key: "+key);
+
+    /**
+     * Fake Server Request Handler for GET Type Request
+     * @param key      API key
+     * @param pathList Absolute path
+     * @return MockResponse at the path
+     * @throws IllegalAccessException  MockResponse does not exists or Wrong API Key
+     * @throws JsonProcessingException Path does not exists. Response body is returned as a string as it is.
+     */
+    public MockResponse getTypeResponse(String key, ArrayList <String> pathList) throws IllegalAccessException, JsonProcessingException {
+        logger.info("Received a Post request for key: " + key);
         if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
         return keyTeamMap.get(key).getMockServer().getTypeResponse(pathList);
     }

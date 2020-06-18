@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.URITree;
 
 import java.util.regex.Pattern;
 
@@ -7,7 +7,7 @@ public class DirPattern implements Directory {
     private final String name;
     private final Pattern pattern;
 
-    DirPattern(String name, Pattern pattern) {
+    public DirPattern(String name, Pattern pattern) {
         this.name=name;
         this.pattern = pattern;
     }

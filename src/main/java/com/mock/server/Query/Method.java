@@ -1,4 +1,4 @@
-package com.mock.server;
+package com.mock.server.Query;
 
 /**
  * Supports only methods supported by servlet request

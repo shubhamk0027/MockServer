@@ -1,5 +1,3 @@
-package com.mock.server;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,14 +7,10 @@ import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-// order of logging of the create and delete team is guaranteed since during creating and deleting process
-// no other logging request is possible
-// and logging is getting handled by a separate thread and in a queue
-//  https://www.journaldev.com/1034/java-blockingqueue-example
-
+// THIS CLASS IS NOT USED ANYWHERE NOW
 @Service
 public class Persistence {
-    // it is possible that take and add can occur at the same time! :. Blocking queue
+
     private final BlockingQueue <String> tasks;
     private final int maxTries;
 
