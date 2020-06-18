@@ -1,5 +1,4 @@
-package com.mock.server.Server;
-
+/*
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.json.JSONObject;
@@ -8,7 +7,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
+*/
+/*
+SCHEMA->
 //https://github.com/everit-org/json-schema
+supports both STRICT which matches all fields,
+order of arrays and no additional fields allowed,
+and ONLY_MATCHING_FIELDS which only matches fields provided in the request matcher
+ *//*
+
 
 public class POSTData {
 
@@ -42,16 +49,18 @@ public class POSTData {
         }
     }
 
-    public synchronized void deletePayload(JSONObject jsonObject){
-        boolean found=false;
-        for(Payload payload : payloads) {
-            if(payload.equals(jsonObject)) {
-                // payload=null;
-                payload.setNull();
-                found=true;
+    public int deletePayload(JSONObject jsonObject){
+        int key = -1;
+        synchronized (payloads){
+            for(Payload payload : payloads) {
+                if(payload.equals(jsonObject)) {
+                    key = payload.getKey();
+                    payload.setNull();
+                }
             }
         }
-        if(!found) throw new IllegalArgumentException("No matching payload found for this query!");
+        if(key==-1) throw new IllegalArgumentException("No matching payload found for this query!");
+        return key;
     }
 
     public int anyMatchPayload(JSONObject jsonObject){
@@ -70,3 +79,4 @@ public class POSTData {
         return key;
     }
 }
+*/

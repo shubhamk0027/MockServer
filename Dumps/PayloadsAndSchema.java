@@ -1,5 +1,4 @@
-package com.mock.server.Server;
-
+/*
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.json.JSONObject;
@@ -40,15 +39,13 @@ public class PayloadsAndSchema {
         return ret;
     }
 
-    public void deletePayload(int key, JSONObject object) throws IllegalArgumentException {
+    public int deletePayload(int key, JSONObject object) throws IllegalArgumentException {
         if(key>postData.size()) throw new IllegalArgumentException("No Mock Query Exists of this Payload!");
-        postData.get(key-1).deletePayload(object);
+        return postData.get(key-1).deletePayload(object);
     }
 
     public int checkPayload(int key, JSONObject object) {
-        key = postData.get(key-1).anyMatchPayload(object);
-        if(key==-1) throw new IllegalArgumentException("No matching payload found!");
-        return key;
+        return postData.get(key-1).anyMatchPayload(object);
     }
 
     public void addSchema(int key, Schema schema){
@@ -67,3 +64,4 @@ public class PayloadsAndSchema {
         return postData.get(key-1).getSchema();
     }
 }
+*/

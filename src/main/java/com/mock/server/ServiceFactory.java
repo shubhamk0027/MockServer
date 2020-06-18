@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mock.server.Query.*;
 import com.mock.server.Server.DevTeam;
 import com.mock.server.Server.MockServer;
-import com.mock.server.Server.PayloadsAndSchema;
 import com.mock.server.Server.Verifier;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -36,23 +35,16 @@ public class ServiceFactory {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final int KEY_LEN = 64;
 
-    private final ObjectFactory<PayloadsAndSchema> payloadSchemaFactory ;
+    private final ObjectFactory<MockServer> mockServerFactory;
     private final ConcurrentHashMap <String, DevTeam> keyTeamMap;
     private final ConcurrentHashMap <String, DevTeam> nameTeamMap;
 
-    private final Verifier verifier;
-    private final RedisClient redisClient;
     private boolean isLoading;
 
-    private ServiceFactory(
-            Verifier verifier,
-            RedisClient redisClient,
-            ObjectFactory<PayloadsAndSchema> payloadSchemaFactory) throws IllegalAccessException, InterruptedException, IOException {
 
-        this.verifier = verifier;
-        this.redisClient = redisClient;
-        this.payloadSchemaFactory=payloadSchemaFactory;
+    private ServiceFactory( ObjectFactory<MockServer> mockServerFactory) throws IllegalAccessException, IOException {
 
+        this.mockServerFactory = mockServerFactory;
         keyTeamMap = new ConcurrentHashMap <>();
         nameTeamMap = new ConcurrentHashMap <>();
         isLoading = true;
@@ -67,7 +59,6 @@ public class ServiceFactory {
         }
 
         isLoading = false;
-
     }
 
 
@@ -85,15 +76,13 @@ public class ServiceFactory {
                 else if(strLine.charAt(1) == 'S') addSchema(strLine.substring(3));
                 else throw new IllegalStateException("Can't read the earlier operations!");
                 total++;
-            }else{
+            }else if(strLine.charAt(0) == '-') {
                 if(strLine.charAt(1) == 'T') deleteTeam(strLine.substring(3));
                 else deleteMockQuery(strLine.substring(3));
                 total++;
             }
         }
         fstream.close();
-
-
         return total;
     }
 
@@ -133,7 +122,7 @@ public class ServiceFactory {
                 }
             String teamName = body.substring(j, i - 1);
             String adminId = body.substring(i, body.length() - 1);
-            MockServer mockServer = new MockServer(redisClient, verifier, payloadSchemaFactory.getObject());
+            MockServer mockServer = mockServerFactory.getObject();
             mockServer.setTeamName(teamName);
             DevTeam newDevTeam = new DevTeam(apiKey, teamName, adminId, mockServer);
             nameTeamMap.put(teamName, newDevTeam);
@@ -146,7 +135,7 @@ public class ServiceFactory {
             throw new IllegalArgumentException("Team Name exists. Choose a different Team Name!");
         String apiKey = createKey(createTeamQuery.getTeamName());
 
-        MockServer mockServer = new MockServer(redisClient, verifier, payloadSchemaFactory.getObject());
+        MockServer mockServer = mockServerFactory.getObject();
         mockServer.setTeamName(createTeamQuery.getTeamName());
         
         DevTeam newDevTeam = new DevTeam(apiKey, createTeamQuery.getTeamName(), createTeamQuery.getAdminId(), mockServer);
@@ -228,7 +217,7 @@ public class ServiceFactory {
         mockQuery.log();
         if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
-        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery, false);
+        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().addMockQuery(mockQuery);
         if(!isLoading) appender.info("+M " + mapper.writeValueAsString(mockQuery));
     }
 
@@ -251,7 +240,7 @@ public class ServiceFactory {
             throw new IllegalArgumentException("Schema is only associated with POST, PUT AND DEL query!");
 
         return keyTeamMap.get(getSchemaQuery.getTeamKey()).getMockServer().getSchema(
-                verifier.getSimplePathList(getSchemaQuery.getPath(), getSchemaQuery.getMethod().val)
+                Verifier.getSimplePathList(getSchemaQuery.getPath(), getSchemaQuery.getMethod().val)
         );
     }
 
@@ -263,19 +252,17 @@ public class ServiceFactory {
      * @throws IllegalAccessException  Wrong API key
      */
     public void deleteMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
-        MockQuery mockQuery = mapper.readValue(body, MockQuery.class);
-        mockQuery.log();
-        if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
-            throw new IllegalAccessException("You seems to have a wrong API key!");
-        keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().updateMockQuery(mockQuery, true);
-        if(!isLoading) appender.info("-M " + mapper.writeValueAsString(mockQuery)); // compress and write
+        DeleteMockRequest deleteMockRequest = mapper.readValue(body, DeleteMockRequest.class);
+        if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey())) throw new IllegalAccessException("You seems to have a wrong API key!");
+        keyTeamMap.get(deleteMockRequest.getTeamKey()).getMockServer().deleteMockRequest(deleteMockRequest);
+        if(!isLoading) appender.info("-M " + mapper.writeValueAsString(deleteMockRequest)); // compress and write
     }
 
 
     /**
      * Fake Server Request Handler for POST Type Request
      * @param key      API key
-     * @param pathList Absoulte path
+     * @param pathList Absolute path
      * @param body     payload JSON String
      * @return MockResponse at the path
      * @throws IllegalAccessException  MockResponse does not exists or Wrong API Key

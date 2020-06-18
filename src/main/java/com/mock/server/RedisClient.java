@@ -9,27 +9,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class RedisClient {
 
-    private final RedissonClient redissonClient;
+    private final static RedissonClient redissonClient;
 
-    private RedisClient() {
+    static {
         Config config = new Config();
         config.useSingleServer().setAddress("redis://127.0.0.1:6379");
         redissonClient = Redisson.create(config);
     }
 
     // Overwriting the value at the same path
-    public void addVal(String key, String jsonString) {
+    public static void addVal(String key, String jsonString) {
         RBucket <String> rBucket = redissonClient.getBucket(key);
         rBucket.set(jsonString);
     }
 
-    public void deleteKey(String key) {
+    public static void deleteKey(String key) {
         redissonClient.getBucket(key).delete();
     }
 
-    public String getVal(String key) {
+    public static String getVal(String key) {
         RBucket <String> rBucket = redissonClient.getBucket(key);
-        if(!rBucket.isExists()) throw new IllegalStateException("This value has been deleted!");
+        if(!rBucket.isExists()) throw new IllegalArgumentException("This value has been deleted!");
         return rBucket.get();
     }
 

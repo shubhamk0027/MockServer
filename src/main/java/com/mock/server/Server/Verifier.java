@@ -24,7 +24,7 @@ public class Verifier {
      * All valid regular expressions does not contains a forward slash
      * https://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
      */
-    public  ArrayList <Directory> getPathList(
+    public static ArrayList <Directory> getPathList(
             Method method,
             String path,
             String queryParameters,
@@ -56,10 +56,10 @@ public class Verifier {
 
         // if Query Request is a normal expression or a regex
         if(queryParameters!=null){
-            logger.info("Normal Query Prameters Encountered!");
+            logger.info("Normal Query Prameters Found!");
             pathList.add(new DirName(queryParameters.substring(1)));
         }else if(queryParametersRegex!=null){
-            logger.info("Regex Query Parameters Encountered!");
+            logger.info("Regex Query Parameters Found!");
             String query = queryParametersRegex.substring(1);
             // note name involves ?(diff it from a Directory!) but pattern does not!
             pathList.add(new DirPattern(query, Pattern.compile(query)));
@@ -73,7 +73,7 @@ public class Verifier {
     }
 
 
-    private  void addToPathList(String dir, ArrayList <Directory> pathList) throws IllegalStateException, PatternSyntaxException {
+    private static void addToPathList(String dir, ArrayList <Directory> pathList) throws IllegalStateException, PatternSyntaxException {
         if(dir.length() == 0) throw new IllegalStateException("Directory Name can not be empty!");
         boolean isDirString = true;
         for(int j = 0; j < dir.length(); j++) {
@@ -96,10 +96,10 @@ public class Verifier {
      * This verification is already done in the slack bot
      */
 
-    public  void verifyMethodAndQuery(Method method, String jsonBody, String queryParameters, String queryParametersRegex) {
+    public static void verifyMethodAndQuery(Method method, String jsonBody, String queryParameters, String queryParametersRegex) {
         if(queryParameters!=null && queryParametersRegex!=null)
             throw new IllegalStateException("You can not set both query Parameters and QueryParameters in Regex at the same time");
-        if(method == Method.GET) {
+        if(method == Method.GET ) {
             if(jsonBody != null) {
                 jsonBody = null;
                 logger.info("GET method should not have a request body. Request body will be ignored!");
@@ -123,7 +123,7 @@ public class Verifier {
     }
 
 
-    public ArrayList <String> getSimplePathList(String uri, String method){
+    public static ArrayList <String> getSimplePathList(String uri, String method){
         ArrayList<String> res = new ArrayList <>();
         res.add(method);
         StringBuilder stringBuilder = new StringBuilder();
@@ -142,8 +142,6 @@ public class Verifier {
         }
         return res;
     }
-
-
 
 
 }
