@@ -1,4 +1,6 @@
-package com.mock.server.Query;
+package com.mock.server.Query.MockQuery;
+
+import com.mock.server.Query.Method;
 
 public class MockRequest {
 

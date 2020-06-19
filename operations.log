@@ -1,7 +1,7 @@
-+T abb68da33d87dadb devTeam U014WK3771S 
-+T 4e7fc1d157315a0a marketingTeam U014WK3771S 
--T {"teamKey":"4e7fc1d157315a0a","adminId":"U014WK3771S"} 
-+M {"mockRequest":{"teamKey":"abb68da33d87dadb","method":"GET","path":"/hello/[a-zA-Z]+/price","jsonBody":null,"queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{ \"msg\":\"Done\",\"price\"=2000}","headers":{}}}
--M {"mockRequest":{"teamKey":"abb68da33d87dadb","method":"GET","path":"/hello/[a-zA-Z]+/price","jsonBody":null,"queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{ \"msg\":\"Done\",\"price\"=2000}","headers":{}}}
-+T fc77617c62fe7c43 devTeam2 U014WK3771S 
-+M {"mockRequest":{"teamKey":"abb68da33d87dadb","method":"GET","path":"/hello/[a-zA-Z]+/price","jsonBody":null,"queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{\"price\":2000}","headers":{}}} 
++T 7752fb903d94ba48 Team1 U014WK3771S 
++T 2ac66f8bf1a5f86b Team2 U014WK3771S 
+-T {"teamKey":"2ac66f8bf1a5f86b","adminId":"U014WK3771S"} 
++S {"mockSchema":{"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/[a-zA-Z]+/price","schema":"{\"properties\":{ \"itemName\": { \"type\":\"string\"},  \"price\": { \"type\":\"number\" }}}","queryParameters":null,"queryParametersRegex":null},"mockResponse":{"status":200,"jsonBody":"{ \"info\":\"Item is out of stock!\" }","headers":{"browser":"midori","time":"12:00AM"}}} 
++M {"mockRequest":{"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/[a-zA-Z]+/details","jsonBody":"{\"itemName\":\"lenevo\"}","queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{\"battery\":4000mAh}","headers":{"browser":"midori","time":"12:00AM"}}} 
++M {"mockRequest":{"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/iphone/details","jsonBody":"{\"itemName\":\"lenevo\"}","queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{\"info\":\"This is only available for specifc customers!\"}","headers":{}}} 
+-M {"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/iphone/details","queryParameters":null,"queryParametersRegex":null} 

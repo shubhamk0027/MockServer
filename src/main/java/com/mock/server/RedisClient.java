@@ -6,6 +6,8 @@ import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
+
 @Service
 public class RedisClient {
 
@@ -25,6 +27,10 @@ public class RedisClient {
 
     public static void deleteKey(String key) {
         redissonClient.getBucket(key).delete();
+    }
+
+    public static void deleteAll(String pattern){
+        redissonClient.getKeys().deleteByPattern(pattern);
     }
 
     public static String getVal(String key) {

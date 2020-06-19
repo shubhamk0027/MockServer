@@ -2,7 +2,7 @@ package com.mock.server.Server;
 import org.everit.json.schema.Schema;
 import org.json.JSONObject;
 
-public class PayloadSchema {
+public class PayloadSchema implements Payload {
     private Schema schema;
 
     PayloadSchema(Schema schema){

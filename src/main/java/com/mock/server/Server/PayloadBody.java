@@ -3,7 +3,7 @@ import org.json.JSONObject;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 
-public class PayloadBody {
+public class PayloadBody implements Payload {
 
     private JSONObject payload;
     private boolean mode;

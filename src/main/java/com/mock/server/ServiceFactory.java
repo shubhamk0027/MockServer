@@ -3,6 +3,9 @@ package com.mock.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mock.server.Query.*;
+import com.mock.server.Query.MockQuery.MockQuery;
+import com.mock.server.Query.MockResponse;
+import com.mock.server.Query.MockSchema.MockSchemaQuery;
 import com.mock.server.Server.DevTeam;
 import com.mock.server.Server.MockServer;
 import com.mock.server.Server.Verifier;
@@ -10,6 +13,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.boot.logging.LoggerGroup;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
@@ -41,8 +45,7 @@ public class ServiceFactory {
 
     private boolean isLoading;
 
-
-    private ServiceFactory( ObjectFactory<MockServer> mockServerFactory) throws IllegalAccessException, IOException {
+    private ServiceFactory( ObjectFactory<MockServer> mockServerFactory) throws IllegalAccessException{
 
         this.mockServerFactory = mockServerFactory;
         keyTeamMap = new ConcurrentHashMap <>();
@@ -53,9 +56,11 @@ public class ServiceFactory {
             logger.info("LOADING OLD DATA...");
             int total = loadOperations();
             logger.info("LOADED "+total+" OPERATIONS SUCCESSFULLY!");
-        }catch( IllegalAccessException | IOException e) {
+        }catch( IllegalAccessException e) {
             logger.info("Error in reading the file Operations!");
             throw e;
+        }catch( IOException e){
+            logger.info("No Log file found! No operations loaded!");
         }
 
         isLoading = false;
@@ -66,9 +71,9 @@ public class ServiceFactory {
     public int  loadOperations() throws IllegalAccessException, IOException {
         FileInputStream fstream = new FileInputStream("operations.log");
         BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-        String strLine;
         int total=0;
 
+        String strLine;
         while((strLine = br.readLine()) != null) {
             if(strLine.charAt(0) == '+') {
                 if(strLine.charAt(1) == 'T') createTeam(strLine.substring(3));
@@ -82,6 +87,7 @@ public class ServiceFactory {
                 total++;
             }
         }
+
         fstream.close();
         return total;
     }
@@ -121,7 +127,7 @@ public class ServiceFactory {
                     break;
                 }
             String teamName = body.substring(j, i - 1);
-            String adminId = body.substring(i, body.length() - 1);
+            String adminId = body.substring(i,body.length()-1);
             MockServer mockServer = mockServerFactory.getObject();
             mockServer.setTeamName(teamName);
             DevTeam newDevTeam = new DevTeam(apiKey, teamName, adminId, mockServer);
@@ -159,11 +165,15 @@ public class ServiceFactory {
         if(!keyTeamMap.containsKey(deleteTeamQuery.getTeamKey()))
             throw new IllegalArgumentException("No Team exists with this key!");
 
-        if(!keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId().equals(deleteTeamQuery.getAdminId()))
+        if(!keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId().equals(deleteTeamQuery.getAdminId())){
+            logger.info("Actual "+keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId()+"|"+deleteTeamQuery.getAdminId());
             throw new IllegalAccessException("Only the Admin can delete a team!");
+        }
 
-        nameTeamMap.remove(keyTeamMap.get(deleteTeamQuery.getTeamKey()).getTeamName());
+        String teamName = keyTeamMap.get(deleteTeamQuery.getTeamKey()).getTeamName();
+        nameTeamMap.remove(teamName);
         keyTeamMap.remove(deleteTeamQuery.getTeamKey());
+        RedisClient.deleteAll(teamName+" *");
 
         if(!isLoading) appender.info("-T " + mapper.writeValueAsString(deleteTeamQuery));
     }
@@ -199,9 +209,9 @@ public class ServiceFactory {
      */
     public void addSchema(String body) throws JsonProcessingException, IllegalAccessException {
         MockSchemaQuery mockSchemaQuery = mapper.readValue(body, MockSchemaQuery.class);
-        if(!keyTeamMap.containsKey(mockSchemaQuery.getTeamKey()))
+        if(!keyTeamMap.containsKey(mockSchemaQuery.getMockSchema().getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
-        keyTeamMap.get(mockSchemaQuery.getTeamKey()).getMockServer().addSchema(mockSchemaQuery);
+        keyTeamMap.get(mockSchemaQuery.getMockSchema().getTeamKey()).getMockServer().addSchema(mockSchemaQuery);
         if(!isLoading) appender.info("+S " + mapper.writeValueAsString(mockSchemaQuery));
     }
 
@@ -214,7 +224,6 @@ public class ServiceFactory {
      */
     public void addMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
         MockQuery mockQuery = mapper.readValue(body, MockQuery.class);
-        mockQuery.log();
         if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
         keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().addMockQuery(mockQuery);
@@ -231,17 +240,21 @@ public class ServiceFactory {
      */
     public String getSchema(String body) throws JsonProcessingException, IllegalAccessException {
         GetSchemaQuery getSchemaQuery = mapper.readValue(body, GetSchemaQuery.class);
-        getSchemaQuery.log();
-
         if(!keyTeamMap.containsKey(getSchemaQuery.getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
 
         if(getSchemaQuery.getMethod() != Method.POST && getSchemaQuery.getMethod() != Method.PUT && getSchemaQuery.getMethod() != Method.DEL)
             throw new IllegalArgumentException("Schema is only associated with POST, PUT AND DEL query!");
 
-        return keyTeamMap.get(getSchemaQuery.getTeamKey()).getMockServer().getSchema(
-                Verifier.getSimplePathList(getSchemaQuery.getPath(), getSchemaQuery.getMethod().val)
-        );
+        String path = getSchemaQuery.getPath();
+        int i=0;
+        for(;i<path.length();i++) if(path.charAt(i)=='?') break;
+        ArrayList<String> pathList =
+                Verifier.getSimplePathList(getSchemaQuery.getPath().substring(0,i), getSchemaQuery.getMethod().val);
+        if(i<path.length()-1) pathList.add(path.substring(i+1)); // ignore '?'
+
+        for(String s: pathList) logger.info("->"+s);
+        return keyTeamMap.get(getSchemaQuery.getTeamKey()).getMockServer().getSchema(pathList);
     }
 
 
@@ -284,9 +297,10 @@ public class ServiceFactory {
      * @throws JsonProcessingException Path does not exists. Response body is returned as a string as it is.
      */
     public MockResponse getTypeResponse(String key, ArrayList <String> pathList) throws IllegalAccessException, JsonProcessingException {
-        logger.info("Received a Post request for key: " + key);
+        logger.info("Received a GET request for key: " + key);
         if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
         return keyTeamMap.get(key).getMockServer().getTypeResponse(pathList);
     }
+
 
 }

@@ -48,7 +48,7 @@ public class OperationsServlet extends HttpServlet {
                     serviceFactory.addSchema(body);
                     resp.setStatus(200);
                     PrintWriter out = resp.getWriter();
-                    out.write("Schema Updated Successfully");
+                    out.write("Schema Added Successfully");
                     break;
                 }
                 case "_add/_mock": {
@@ -90,7 +90,7 @@ public class OperationsServlet extends HttpServlet {
                     logger.info("Received Delete Mock Request!");
                     serviceFactory.deleteMockQuery(body);
                     PrintWriter out = resp.getWriter();
-                    out.write("MockQuery Deleted Successfully!");
+                    out.write("MockQuery/MockSchema Deleted Successfully!");
                     break;
                 }
                 default:

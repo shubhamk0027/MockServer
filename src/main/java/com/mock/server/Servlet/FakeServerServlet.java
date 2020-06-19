@@ -53,7 +53,7 @@ public class FakeServerServlet extends HttpServlet {
         String key = uri.substring(1,i);
         uri = uri.substring(i);
 
-        ArrayList<String> pathList = verifier.getSimplePathList(uri,method);
+        ArrayList<String> pathList = Verifier.getSimplePathList(uri,method);
 
         String queryParameters=  request.getQueryString();
         if(queryParameters!=null && queryParameters.length()>0) {
@@ -87,7 +87,7 @@ public class FakeServerServlet extends HttpServlet {
         String key = uri.substring(1,i);
         uri = uri.substring(i);
 
-        ArrayList<String> pathList = verifier.getSimplePathList(uri,method);
+        ArrayList<String> pathList = Verifier.getSimplePathList(uri,method);
 
         String queryParameters=  request.getQueryString();
         if(queryParameters!=null && queryParameters.length()>0)

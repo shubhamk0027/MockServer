@@ -7,6 +7,11 @@
             <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
         </encoder>
     </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+        </encoder>
+    </appender>
     <appender name="OPERATIONS-FILE" class="ch.qos.logback.core.FileAppender">
         <file>operations.log</file>
         <append>true</append>
@@ -19,6 +24,9 @@
         <appender-ref ref="OPERATIONS-FILE"/>
     </logger>
     <root level="info">
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="STDOUT"/>
     </root>
+<!--    <root level="info">-->
+<!--        <appender-ref ref="FILE"/>-->
+<!--    </root>-->
 </configuration>
