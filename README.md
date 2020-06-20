@@ -61,7 +61,7 @@ with payloads if any
 
 3. The path can have directory names as a regular expression as should in the tutorial above
 
-4. Payloads can have strict checking type or normal checking. For more about how the payload comparison is happening, see https://github.com/skyscreamer/JSONassert
+4. Payloads can have strict checking type or normal checking. For more about how the payloadResponse comparison is happening, see https://github.com/skyscreamer/JSONassert
 
 5. Schema matching is done with the help of skyscreamer library, https://github.com/everit-org/json-schema
 
@@ -77,7 +77,7 @@ with payloads if any
 
 11. Don't forget to delete both the logs after the development process is over. 
 
-12. All the data, payload, and the requests must be in JSON format. Other content types are not supported
+12. All the data, payloadResponse, and the requests must be in JSON format. Other content types are not supported
 
 
 #### Also as of now

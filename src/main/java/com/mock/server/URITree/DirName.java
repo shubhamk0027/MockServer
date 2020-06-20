@@ -1,5 +1,7 @@
 package com.mock.server.URITree;
 
+// When directory int the path is a simple string without any regular expression
+
 public class DirName implements Directory {
 
     private final String name;
@@ -17,4 +19,5 @@ public class DirName implements Directory {
     public String getDirName() {
         return name;
     }
+
 }

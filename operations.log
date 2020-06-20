@@ -1,7 +1,12 @@
-+T 7752fb903d94ba48 Team1 U014WK3771S 
-+T 2ac66f8bf1a5f86b Team2 U014WK3771S 
--T {"teamKey":"2ac66f8bf1a5f86b","adminId":"U014WK3771S"} 
-+S {"mockSchema":{"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/[a-zA-Z]+/price","schema":"{\"properties\":{ \"itemName\": { \"type\":\"string\"},  \"price\": { \"type\":\"number\" }}}","queryParameters":null,"queryParametersRegex":null},"mockResponse":{"status":200,"jsonBody":"{ \"info\":\"Item is out of stock!\" }","headers":{"browser":"midori","time":"12:00AM"}}} 
-+M {"mockRequest":{"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/[a-zA-Z]+/details","jsonBody":"{\"itemName\":\"lenevo\"}","queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{\"battery\":4000mAh}","headers":{"browser":"midori","time":"12:00AM"}}} 
-+M {"mockRequest":{"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/iphone/details","jsonBody":"{\"itemName\":\"lenevo\"}","queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"status":200,"jsonBody":"{\"info\":\"This is only available for specifc customers!\"}","headers":{}}} 
--M {"teamKey":"7752fb903d94ba48","method":"POST","path":"/items/iphone/details","queryParameters":null,"queryParametersRegex":null} 
++T c29219479096998a Dev1 admin1 
++T 87879c21b7b3c632 Dev2 admin2 
+-T {"teamKey":"c29219479096998a","adminId":"admin1"} 
++T ca72678b69c3c1ed Dev1 admin1 
+-T {"teamKey":"87879c21b7b3c632","adminId":"admin2"} 
++M {"mockRequest":{"teamKey":"ca72678b69c3c1ed","method":"POST","path":"/items/electronics/[a-zA-Z]+/details","requestBody":"{\"username\":\"alex\",\"userId\":1234567890}","queryParameters":null,"queryParametersRegex":null,"checkMode":false},"mockResponse":{"statusCode":200,"responseBody":"{\"price\":\"20000\"}","headers":{"browser":"chrome","Content-Type":"application/json"}}} 
++M {"mockRequest":{"teamKey":"ca72678b69c3c1ed","method":"POST","path":"/items/electronics/[a-zA-Z]+/details","requestBody":"{\"username\":\"missy\",\"userId\":1234567890}","queryParameters":null,"queryParametersRegex":null,"checkMode":true},"mockResponse":{"statusCode":200,"responseBody":"{\"price\":\"20000\"}","headers":{"browser":"chrome","Content-Type":"application/json"}}} 
+-P {"teamKey":"ca72678b69c3c1ed","method":"POST","path":"/items/electronics/[a-zA-Z]+/details","queryParameters":null,"queryParametersRegex":null,"requestBody":"{\"username\":\"missy\",\"userId\":1234567890}"} 
+-M {"teamKey":"ca72678b69c3c1ed","method":"POST","path":"/items/electronics/[a-zA-Z]+/details","queryParameters":null,"queryParametersRegex":null,"requestBody":null} 
++S {"mockSchema":{"teamKey":"ca72678b69c3c1ed","method":"POST","path":"/items/electronics/[a-zA-Z]+/details","jsonSchema":"{\"properties\":{\"username\":{\"type\":\"string\"},\"userId\":{\"type\":\"number\"}}}","queryParameters":null,"queryParametersRegex":null},"mockResponse":{"statusCode":200,"responseBody":"{\"price\":\"2000\"}","headers":{"browser":"mozilla"}}} 
++M {"mockRequest":{"teamKey":"ca72678b69c3c1ed","method":"GET","path":"/items/grocery/details","requestBody":null,"queryParameters":"?name=alex","queryParametersRegex":null,"checkMode":false},"mockResponse":{"statusCode":200,"responseBody":"{\"price\":\"50000\"}","headers":{"browser":"chrome","Content-Type":"application/json"}}} 
++M {"mockRequest":{"teamKey":"ca72678b69c3c1ed","method":"GET","path":"/items/grocery/details","requestBody":null,"queryParameters":null,"queryParametersRegex":"?name=[a-zA-Z]+&id=[0-9]+","checkMode":false},"mockResponse":{"statusCode":200,"responseBody":"{\"info\":\"All Set!\"}","headers":{"browser":"chrome","Content-Type":"application/json"}}} 

@@ -19,105 +19,103 @@ import java.util.Map;
 import java.util.Scanner;
 
 /**
- * Servlets run on multiple threads
- * therefore should be able to handle concurrent requests
- * and should support synchronization over the shared objects
+ * Servlets run on multiple threads therefore should be able to handle concurrent
+ * requests and should support synchronization over the shared objects
  */
 
 @Service
 public class FakeServerServlet extends HttpServlet {
 
-    public static final Logger logger= LoggerFactory.getLogger(FakeServerServlet.class);
+    public static final Logger logger = LoggerFactory.getLogger(FakeServerServlet.class);
     private final ServiceFactory serviceFactory;
-    private final Verifier verifier;
 
-    FakeServerServlet(ServiceFactory serviceFactory, Verifier verifier){
-        this.serviceFactory=serviceFactory;
-        this.verifier=verifier;
+    FakeServerServlet(ServiceFactory serviceFactory) {
+        this.serviceFactory = serviceFactory;
     }
 
+    // Extract the requestBody from the request
     private String getBody(HttpServletRequest request) throws IOException {
         Scanner s = new Scanner(request.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
     }
 
 
+    // Handle the GET type Requests (GET HEAD OPTIONS TRACE), ie requests without payloads
     private void getTypeResponse(
             HttpServletRequest request,
             HttpServletResponse response,
-            String method) throws Exception {
+            String method) throws IOException, IllegalAccessException, IllegalArgumentException {
 
-        String uri=request.getRequestURI();
-        int i=1;
-        for(;i<uri.length();i++) if(uri.charAt(i)=='/') break;
-        String key = uri.substring(1,i);
+        String uri = request.getRequestURI();
+        int i = 1;
+        for(; i < uri.length(); i++) if(uri.charAt(i) == '/') break;
+        String key = uri.substring(1, i);
         uri = uri.substring(i);
 
-        ArrayList<String> pathList = Verifier.getSimplePathList(uri,method);
+        ArrayList <String> pathList = Verifier.getSimplePathList(uri, method);
 
-        String queryParameters=  request.getQueryString();
-        if(queryParameters!=null && queryParameters.length()>0) {
+        String queryParameters = request.getQueryString();
+        if(queryParameters != null && queryParameters.length() > 0) {
             pathList.add(queryParameters);
         }
 
-        logger.info("Path: "+pathList);
-        MockResponse redisValue = serviceFactory.getTypeResponse(key,pathList);
-        logger.info("Returned details: ");
-        logger.info(""+redisValue.getStatus());
+        logger.info("Path: " + pathList);
+        MockResponse mockResponse = serviceFactory.getTypeResponse(key, pathList);
+        logger.info("Returned details:" + mockResponse.getStatusCode());
 
-        if(redisValue.getHeaders().size()>0) logger.info("Headers Returned: ");
-        for(Map.Entry<String,String> itr: redisValue.getHeaders().entrySet()){
-            response.addHeader(itr.getKey(),itr.getValue());
-            logger.info(itr.getKey()+":"+itr.getValue());
+        if(mockResponse.getHeaders().size() > 0) {
+            logger.info("Headers Returned: ");
         }
 
-        logger.info("Body: "+redisValue.getJsonBody());
+        for(Map.Entry <String, String> itr : mockResponse.getHeaders().entrySet()) {
+            response.addHeader(itr.getKey(), itr.getValue());
+            logger.info(itr.getKey() + ":" + itr.getValue());
+        }
+
+        logger.info("ResponseBody: " + mockResponse.getResponseBody());
         PrintWriter out = response.getWriter();
-        out.println(redisValue.getJsonBody());
+        out.println(mockResponse.getResponseBody());
     }
 
+    // Handle the POST type Requests (POST PUT DEL), ie requests with payloads
     private void postTypeResponse(
             HttpServletRequest request,
             HttpServletResponse response,
-            String method) throws Exception {
+            String method) throws IOException, IllegalAccessException, IllegalArgumentException {
 
-        String uri=request.getRequestURI();
-        int i=1;
-        for(;i<uri.length();i++) if(uri.charAt(i)=='/') break;
-        String key = uri.substring(1,i);
+        String uri = request.getRequestURI();
+        int i = 1;
+        for(; i < uri.length(); i++) if(uri.charAt(i) == '/') break;
+        String key = uri.substring(1, i);
         uri = uri.substring(i);
 
-        ArrayList<String> pathList = Verifier.getSimplePathList(uri,method);
+        ArrayList <String> pathList = Verifier.getSimplePathList(uri, method);
 
-        String queryParameters=  request.getQueryString();
-        if(queryParameters!=null && queryParameters.length()>0)
+        String queryParameters = request.getQueryString();
+        if(queryParameters != null && queryParameters.length() > 0)
             pathList.add(queryParameters);
 
         String body = getBody(request);
-        logger.info("Path: "+pathList);
-        logger.info("Body: "+body);
+        logger.info("Path: " + pathList +"\nBody: " + body);
+        MockResponse mockResponse = serviceFactory.postTypeResponse(key, pathList, body);
 
-        MockResponse redisValue = serviceFactory.postTypeResponse(key,pathList,body);
-
-        logger.info("Returned details: ");
-        logger.info(""+redisValue.getStatus());
-
-        if(redisValue.getHeaders().size()>0) logger.info("Headers Returned: ");
-        for(Map.Entry<String,String> itr: redisValue.getHeaders().entrySet()){
-            response.addHeader(itr.getKey(),itr.getValue());
-            logger.info(itr.getKey()+":"+itr.getValue());
+        logger.info("Returned details: "+ mockResponse.getStatusCode());
+        if(mockResponse.getHeaders().size() > 0) logger.info("Headers Returned: ");
+        for(Map.Entry <String, String> itr : mockResponse.getHeaders().entrySet()) {
+            response.addHeader(itr.getKey(), itr.getValue());
+            logger.info(itr.getKey() + ":" + itr.getValue());
         }
 
-        logger.info("Body: "+redisValue.getJsonBody());
+        logger.info("ResponseBody: " + mockResponse.getResponseBody());
         PrintWriter out = response.getWriter();
-        out.println(redisValue.getJsonBody());
+        out.println(mockResponse.getResponseBody());
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try{
-            getTypeResponse(req,resp, Method.GET.val);
-        } catch( Exception e){
+        try {
+            getTypeResponse(req, resp, Method.GET.val);
+        }catch(Exception e) {
             e.getStackTrace();
             logger.info(e.getMessage());
             PrintWriter out = resp.getWriter();
@@ -127,10 +125,10 @@ public class FakeServerServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
-        try{
-            postTypeResponse(req,resp,Method.POST.val);
-        } catch( Exception e){
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            postTypeResponse(req, resp, Method.POST.val);
+        }catch(Exception e) {
             e.getStackTrace();
             logger.info(e.getMessage());
             PrintWriter out = resp.getWriter();
@@ -141,9 +139,9 @@ public class FakeServerServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try{
-            postTypeResponse(req,resp,Method.PUT.val);
-        } catch( Exception e){
+        try {
+            postTypeResponse(req, resp, Method.PUT.val);
+        }catch(Exception e) {
             e.getStackTrace();
             logger.info(e.getMessage());
             PrintWriter out = resp.getWriter();
@@ -153,10 +151,10 @@ public class FakeServerServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
-        try{
-            postTypeResponse(req,resp,Method.DEL.val);
-        } catch( Exception e){
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            postTypeResponse(req, resp, Method.DEL.val);
+        }catch(Exception e) {
             e.getStackTrace();
             logger.info(e.getMessage());
             PrintWriter out = resp.getWriter();
@@ -167,9 +165,9 @@ public class FakeServerServlet extends HttpServlet {
 
     @Override
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try{
-            getTypeResponse(req,resp,Method.HEAD.val);
-        } catch( Exception e){
+        try {
+            getTypeResponse(req, resp, Method.HEAD.val);
+        }catch(Exception e) {
             e.getStackTrace();
             logger.info(e.getMessage());
             PrintWriter out = resp.getWriter();
@@ -179,10 +177,10 @@ public class FakeServerServlet extends HttpServlet {
     }
 
     @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
-        try{
-            getTypeResponse(req,resp,Method.OPTIONS.val);
-        } catch( Exception e){
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            getTypeResponse(req, resp, Method.OPTIONS.val);
+        }catch(Exception e) {
             e.getStackTrace();
             logger.info(e.getMessage());
             PrintWriter out = resp.getWriter();
@@ -192,10 +190,10 @@ public class FakeServerServlet extends HttpServlet {
     }
 
     @Override
-    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
-        try{
-            getTypeResponse(req,resp,Method.TRACE.val);
-        } catch( Exception e){
+    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            getTypeResponse(req, resp, Method.TRACE.val);
+        }catch(Exception e) {
             e.getStackTrace();
             logger.info(e.getMessage());
             PrintWriter out = resp.getWriter();

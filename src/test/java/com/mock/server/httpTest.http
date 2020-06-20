@@ -1,0 +1,432 @@
+### Create a New Team
+POST http://localhost:8080/_admin/_add/_team
+Content-Type: application/json
+
+{
+  "teamName":"Dev1",
+  "adminId":"admin1"
+}
+
+### Expected Response
+### Your Team Key ca72678b69c3c1ed
+
+
+
+
+### Create Another Team with same name
+POST http://localhost:8080/_admin/_add/_team
+Content-Type: application/json
+
+{
+  "teamName":"Dev1",
+  "adminId":"admin2"
+}
+
+### Expected Response
+### Team Name exists. Choose a different Team Name!
+
+
+
+
+### Create Another Team with different name
+POST http://localhost:8080/_admin/_add/_team
+Content-Type: application/json
+
+{
+  "teamName":"Dev2",
+  "adminId":"admin2"
+}
+
+### Expected Response
+### Your Team Key 87879c21b7b3c632
+
+
+
+
+### Delete Second Team by wrong admin
+POST http://localhost:8080/_admin/_del/_team
+Content-Type: application/json
+
+{
+  "teamKey":"c29219479096998a",
+  "adminId":"admin1"
+}
+
+### Expected Response
+### Only the Admin can delete a team!
+
+
+
+
+### Delete Second Team by admin
+POST http://localhost:8080/_admin/_del/_team
+Content-Type: application/json
+
+{
+  "teamKey":"87879c21b7b3c632",
+  "adminId":"admin2"
+}
+
+### Expected Response
+### Team Deleted Successfully!
+
+
+
+
+### Add Mock Query, with Linent Check Mode (means that even if the actual JSON contains extended fields, the test will still pass:)
+POST http://localhost:8080/_admin/_add/_mock
+Content-Type: application/json
+
+{
+	"mockRequest":{
+		"teamKey":"ca72678b69c3c1ed",
+		"method":"POST",
+		"path":"/items/electronics/[a-zA-Z]+/details",
+        "checkMode": "false",
+		"requestBody":"{\"username\":\"alex\",\"userId\":1234567890}"
+	},
+	"mockResponse":{
+		"statusCode":200,
+		"responseBody":"{\"price\":\"20000\"}",
+		"headers":{
+			"browser":"chrome",
+            "Content-Type": "application/json"
+		}
+	}
+}
+
+### Expected Response
+### MockQuery Added Successfully
+
+
+
+
+### Test Mock Query
+POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+Content-Type: application/json
+
+{
+  "username":"alex",
+  "userId":1234567890
+}
+
+### Expected Response
+### {"price": "20000"}
+
+
+
+
+### Test Mock Query, is it lenient?
+POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+Content-Type: application/json
+
+{
+  "userId":1234567890
+}
+
+### Expected Response
+#{
+#  "price": "20000"
+#}
+
+
+
+### Add Another Mock Query on same path with different payloadResponse
+POST http://localhost:8080/_admin/_add/_mock
+Content-Type: application/json
+
+{
+	"mockRequest":{
+		"teamKey":"ca72678b69c3c1ed",
+		"method":"POST",
+		"path":"/items/electronics/[a-zA-Z]+/details",
+        "checkMode": "true",
+		"requestBody":"{\"username\":\"missy\",\"userId\":1234567890}"
+	},
+	"mockResponse":{
+		"statusCode":200,
+		"responseBody":"{\"price\":\"20000\"}",
+		"headers":{
+			"browser":"chrome",
+            "Content-Type": "application/json"
+		}
+	}
+}
+
+### Expected Response
+### MockQuery Added Successfully
+
+
+### Test MockQuery
+POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+Content-Type: application/json
+
+{
+  "username":"missy",
+  "userId":1234567890
+}
+
+### Expected Response
+#{
+#  "price": "20000"
+#}
+
+
+
+
+### We can delete a Particular payloadResponse if we want to as
+POST http://localhost:8080/_admin/_del/_payload
+Content-Type: application/json
+
+{
+  "teamKey":"ca72678b69c3c1ed",
+  "method":"POST",
+  "path":"/items/electronics/[a-zA-Z]+/details",
+  "requestBody":"{\"username\":\"missy\",\"userId\":1234567890}"
+}
+
+### Expected Response
+### PayloadResponse And Response Deleted Successfully!
+
+
+
+
+### Test DeleteMockRequest
+POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+Content-Type: application/json
+
+{
+  "username":"missy",
+  "userId":1234567890
+}
+
+### Expected Response
+### No matching payload found!
+
+
+
+
+### Replacing multiple payloads by adding schema at the path!
+POST http://localhost:8080/_admin/_add/_schema
+Content-Type: application/json
+
+{
+  "mockSchema":{
+    "teamKey":"ca72678b69c3c1ed",
+    "method":"POST",
+    "jsonSchema":"{\"properties\":{\"username\":{\"type\":\"string\"},\"userId\":{\"type\":\"number\"}}}",
+    "path":"/items/electronics/[a-zA-Z]+/details"
+  },
+  "mockResponse":{
+    "statusCode":200,
+    "responseBody":"{\"price\":\"2000\"}",
+    "headers":{
+      "browser":"mozilla"
+    }
+  }
+}
+
+### Expected Response
+### A PayloadResponse List is also attached to this path, try deleting the payloadResponse List at his path and then continue!
+
+
+
+
+### Delete All the Payloads present at this mockrequest.
+POST http://localhost:8080/_admin/_del/_mock
+Content-Type: application/json
+
+{
+  "teamKey":"ca72678b69c3c1ed",
+  "method":"POST",
+  "path":"/items/electronics/[a-zA-Z]+/details"
+}
+
+### Expected Response
+### MockQuery/MockSchema Deleted Successfully!
+
+
+
+### Try adding the schema again!
+POST http://localhost:8080/_admin/_add/_schema
+Content-Type: application/json
+
+{
+  "mockSchema":{
+    "teamKey":"ca72678b69c3c1ed",
+    "method":"POST",
+    "jsonSchema":"{\"properties\":{\"username\":{\"type\":\"string\"},\"userId\":{\"type\":\"number\"}}}",
+    "path":"/items/electronics/[a-zA-Z]+/details"
+  },
+  "mockResponse":{
+    "statusCode":200,
+    "responseBody":"{\"price\":\"2000\"}",
+    "headers":{
+      "browser":"mozilla"
+    }
+  }
+}
+
+### Expected Response
+### Schema Added Successfully!
+
+
+
+
+### Test the schema - Validation Error
+POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
+Content-Type: application/json
+
+{
+  "username":"alex",
+  "userId":"1234567890"
+}
+
+### Expected Response
+### {#/userId: expected type: Number, found: String
+
+
+
+
+### Test the schema - Successfull request Validation
+POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
+Content-Type: application/json
+
+{
+  "username":"alex",
+  "userId":1234567890
+}
+
+### Expected Response
+### {"price":"2000"}
+
+
+
+
+### Find the schema present at this path
+POST http://localhost:8080/_admin/_get/_schema
+Content-Type: application/json
+
+{
+  "teamKey":"ca72678b69c3c1ed",
+  "method":"POST",
+  "path":"/items/electronics/iphone11/details"
+}
+
+### Expected Response
+### Path does not exists!
+### As [a-zA-Z]+ does not expects numbers!
+
+
+
+
+### Find the schema present at this path
+POST http://localhost:8080/_admin/_get/_schema
+Content-Type: application/json
+
+{
+  "teamKey":"ca72678b69c3c1ed",
+  "method":"POST",
+  "path":"/items/electronics/iphoneElevenPro/details"
+}
+
+### Expected Response
+### {"properties":{"userId":{"type":"number"},"username":{"type":"string"}}}
+
+
+
+
+### Get the team Key
+POST http://localhost:8080/_admin/_get/_key
+Content-Type: application/json
+
+{
+  "teamName":"Dev1",
+  "adminId":"admin1"
+}
+
+### Expected Response
+### Your Team Key ca72678b69c3c1ed
+
+
+
+
+### We can also have query parameters as
+POST http://localhost:8080/_admin/_add/_mock
+Content-Type: application/json
+
+{
+  "mockRequest":{
+    "teamKey":"ca72678b69c3c1ed",
+    "method":"GET",
+    "path":"/items/grocery/details",
+    "queryParameters": "?name=alex"
+  },
+  "mockResponse":{
+    "statusCode":200,
+    "responseBody":"{\"price\":\"50000\"}",
+    "headers":{
+      "browser":"chrome",
+      "Content-Type": "application/json"
+    }
+  }
+}
+
+### Expected Response
+### MockQuery Added Successfully!
+
+
+
+
+### Test the added Mock
+GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=alex
+### Expected Response
+#{
+#  "price": "50000"
+#}
+
+
+
+### We can also have query parameters regex as (but not both at the same time!)
+POST http://localhost:8080/_admin/_add/_mock
+Content-Type: application/json
+
+{
+  "mockRequest":{
+    "teamKey":"ca72678b69c3c1ed",
+    "method":"GET",
+    "path":"/items/grocery/details",
+    "queryParametersRegex": "?name=[a-zA-Z]+&id=[0-9]+"
+  },
+  "mockResponse":{
+    "statusCode":200,
+    "responseBody":"{\"info\":\"All Set!\"}",
+    "headers":{
+      "browser":"chrome",
+      "Content-Type": "application/json"
+    }
+  }
+}
+
+### Expected Response
+### MockQuery Added Successfully!
+
+
+
+
+### Test the added Mock
+GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=missy&id=123
+### Expected Response
+#{
+#  "info": "All Set!"
+#}
+
+
+
+
+# In case a path is having multiple responses (because of use regular expressions)
+# The directory without any regular expression will be matched first, then the one with regular expressions
+# Ex: simple/path/here will be matched first then simple/[a-zA-Z]+/path
+
+
+

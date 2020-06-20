@@ -6,14 +6,13 @@ import com.mock.server.Query.*;
 import com.mock.server.Query.MockQuery.MockQuery;
 import com.mock.server.Query.MockResponse;
 import com.mock.server.Query.MockSchema.MockSchemaQuery;
-import com.mock.server.Server.DevTeam;
+import com.mock.server.Server.Team;
 import com.mock.server.Server.MockServer;
 import com.mock.server.Server.Verifier;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.logging.LoggerGroup;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
@@ -40,8 +39,8 @@ public class ServiceFactory {
     private static final int KEY_LEN = 64;
 
     private final ObjectFactory<MockServer> mockServerFactory;
-    private final ConcurrentHashMap <String, DevTeam> keyTeamMap;
-    private final ConcurrentHashMap <String, DevTeam> nameTeamMap;
+    private final ConcurrentHashMap <String, Team> keyTeamMap;
+    private final ConcurrentHashMap <String, Team> nameTeamMap;
 
     private boolean isLoading;
 
@@ -83,7 +82,8 @@ public class ServiceFactory {
                 total++;
             }else if(strLine.charAt(0) == '-') {
                 if(strLine.charAt(1) == 'T') deleteTeam(strLine.substring(3));
-                else deleteMockQuery(strLine.substring(3));
+                else if(strLine.charAt(1) == 'M') deleteMockQuery(strLine.substring(3));
+                else deleteAPayload(strLine.substring(3));
                 total++;
             }
         }
@@ -129,8 +129,7 @@ public class ServiceFactory {
             String teamName = body.substring(j, i - 1);
             String adminId = body.substring(i,body.length()-1);
             MockServer mockServer = mockServerFactory.getObject();
-            mockServer.setTeamName(teamName);
-            DevTeam newDevTeam = new DevTeam(apiKey, teamName, adminId, mockServer);
+            Team newDevTeam = new Team(apiKey, teamName, adminId, mockServer);
             nameTeamMap.put(teamName, newDevTeam);
             keyTeamMap.put(apiKey, newDevTeam);
             return apiKey;
@@ -142,9 +141,7 @@ public class ServiceFactory {
         String apiKey = createKey(createTeamQuery.getTeamName());
 
         MockServer mockServer = mockServerFactory.getObject();
-        mockServer.setTeamName(createTeamQuery.getTeamName());
-        
-        DevTeam newDevTeam = new DevTeam(apiKey, createTeamQuery.getTeamName(), createTeamQuery.getAdminId(), mockServer);
+        Team newDevTeam = new Team(apiKey, createTeamQuery.getTeamName(), createTeamQuery.getAdminId(), mockServer);
         nameTeamMap.put(createTeamQuery.getTeamName(), newDevTeam);
         keyTeamMap.put(apiKey, newDevTeam);
         appender.info("+T " + apiKey + " " + createTeamQuery.getTeamName() + " " + createTeamQuery.getAdminId());
@@ -173,7 +170,6 @@ public class ServiceFactory {
         String teamName = keyTeamMap.get(deleteTeamQuery.getTeamKey()).getTeamName();
         nameTeamMap.remove(teamName);
         keyTeamMap.remove(deleteTeamQuery.getTeamKey());
-        RedisClient.deleteAll(teamName+" *");
 
         if(!isLoading) appender.info("-T " + mapper.writeValueAsString(deleteTeamQuery));
     }
@@ -197,7 +193,7 @@ public class ServiceFactory {
             throw new IllegalAccessException("Only the Admin can have acess the api key!");
         }
 
-        return nameTeamMap.get(createTeamQuery.getTeamName()).getKey();
+        return nameTeamMap.get(createTeamQuery.getTeamName()).getTeamKey();
     }
 
 
@@ -271,6 +267,12 @@ public class ServiceFactory {
         if(!isLoading) appender.info("-M " + mapper.writeValueAsString(deleteMockRequest)); // compress and write
     }
 
+    public void deleteAPayload(String body) throws JsonProcessingException, IllegalAccessException {
+        DeleteMockRequest deleteMockRequest = mapper.readValue(body, DeleteMockRequest.class);
+        if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey())) throw new IllegalAccessException("You seems to have a wrong API key!");
+        keyTeamMap.get(deleteMockRequest.getTeamKey()).getMockServer().deleteAPayloadResponse(deleteMockRequest);
+        if(!isLoading) appender.info("-P " + mapper.writeValueAsString(deleteMockRequest)); // compress and write
+    }
 
     /**
      * Fake Server Request Handler for POST Type Request
@@ -279,9 +281,8 @@ public class ServiceFactory {
      * @param body     payload JSON String
      * @return MockResponse at the path
      * @throws IllegalAccessException  MockResponse does not exists or Wrong API Key
-     * @throws JsonProcessingException Wrong JSON payload or path does not exists. Response body is returned as a string as it is.
      */
-    public MockResponse postTypeResponse(String key, ArrayList <String> pathList, String body) throws IllegalAccessException, JsonProcessingException {
+    public MockResponse postTypeResponse(String key, ArrayList <String> pathList, String body) throws IllegalAccessException {
         logger.info("Received a Post request for key: " + key);
         if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
         return keyTeamMap.get(key).getMockServer().postTypeResponse(pathList, new JSONObject(body));
@@ -294,9 +295,8 @@ public class ServiceFactory {
      * @param pathList Absolute path
      * @return MockResponse at the path
      * @throws IllegalAccessException  MockResponse does not exists or Wrong API Key
-     * @throws JsonProcessingException Path does not exists. Response body is returned as a string as it is.
      */
-    public MockResponse getTypeResponse(String key, ArrayList <String> pathList) throws IllegalAccessException, JsonProcessingException {
+    public MockResponse getTypeResponse(String key, ArrayList <String> pathList) throws IllegalAccessException {
         logger.info("Received a GET request for key: " + key);
         if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
         return keyTeamMap.get(key).getMockServer().getTypeResponse(pathList);
