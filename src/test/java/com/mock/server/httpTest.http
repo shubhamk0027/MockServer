@@ -73,7 +73,7 @@ Content-Type: application/json
 
 
 
-### Add Mock Query, with Linent Check Mode (means that even if the actual JSON contains extended fields, the test will still pass:)
+### Add Mock Query with Linent Check Mode (means that even if the actual JSON contains extended fields the test will still pass:)
 POST http://localhost:8080/_admin/_add/_mock
 Content-Type: application/json
 
@@ -116,7 +116,7 @@ Content-Type: application/json
 
 
 
-### Test Mock Query, is it lenient?
+### Test Mock Query is it lenient?
 POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
 Content-Type: application/json
 
@@ -125,9 +125,9 @@ Content-Type: application/json
 }
 
 ### Expected Response
-#{
-#  "price": "20000"
-#}
+### {
+###  "price": "20000"
+### }
 
 
 
@@ -167,9 +167,9 @@ Content-Type: application/json
 }
 
 ### Expected Response
-#{
-#  "price": "20000"
-#}
+### {
+###  "price": "20000"
+### }
 
 
 
@@ -227,7 +227,7 @@ Content-Type: application/json
 }
 
 ### Expected Response
-### A PayloadResponse List is also attached to this path, try deleting the payloadResponse List at his path and then continue!
+### A PayloadResponse List is also attached to this path try deleting the payloadResponse List at his path and then continue!
 
 
 
@@ -283,7 +283,7 @@ Content-Type: application/json
 }
 
 ### Expected Response
-### {#/userId: expected type: Number, found: String
+### #/userId: expected type: Number found: String
 
 
 
@@ -298,7 +298,9 @@ Content-Type: application/json
 }
 
 ### Expected Response
-### {"price":"2000"}
+### {
+### "price":"2000"
+### }
 
 
 
@@ -381,9 +383,9 @@ Content-Type: application/json
 ### Test the added Mock
 GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=alex
 ### Expected Response
-#{
-#  "price": "50000"
-#}
+### {
+###  "price": "50000"
+### }
 
 
 
@@ -417,16 +419,16 @@ Content-Type: application/json
 ### Test the added Mock
 GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=missy&id=123
 ### Expected Response
-#{
-#  "info": "All Set!"
-#}
+### {
+###  "info": "All Set!"
+### }
 
 
 
 
-# In case a path is having multiple responses (because of use regular expressions)
-# The directory without any regular expression will be matched first, then the one with regular expressions
-# Ex: simple/path/here will be matched first then simple/[a-zA-Z]+/path
+### In case a path is having multiple responses (because of use regular expressions)
+### The directory without any regular expression will be matched first then the one with regular expressions
+### Ex: simple/path/here will be matched first then simple/[a-zA-Z]+/path
 
 
 

@@ -30,7 +30,7 @@ public class PayloadsAndSchema {
         }
         int ret=++payLoadCount;
         try {
-            Payload payload = new Payload(ret, mode, object);
+            PayloadResponse payload = new PayloadResponse(ret, mode, object);
             postData.get(key - 1).addPayload(payload);
         }catch(IllegalArgumentException | ValidationException e){
             payLoadCount--;
@@ -40,7 +40,7 @@ public class PayloadsAndSchema {
     }
 
     public int deletePayload(int key, JSONObject object) throws IllegalArgumentException {
-        if(key>postData.size()) throw new IllegalArgumentException("No Mock Query Exists of this Payload!");
+        if(key>postData.size()) throw new IllegalArgumentException("No Mock Query Exists of this PayloadResponse!");
         return postData.get(key-1).deletePayload(object);
     }
 

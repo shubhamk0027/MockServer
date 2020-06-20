@@ -22,7 +22,7 @@ public class POSTData {
     private static final Logger logger= LoggerFactory.getLogger(POSTData.class);
 
     private Schema schema;
-    private final ArrayList <Payload> payloads;
+    private final ArrayList <PayloadResponse> payloads;
 
     POSTData(){ payloads= new ArrayList <>(); }
 
@@ -41,7 +41,7 @@ public class POSTData {
         schema.validate(jsonObject);
     }
 
-    public void addPayload(Payload payload){
+    public void addPayload(PayloadResponse payload){
         verifySchema(payload.getPayload());
         logger.info("Schema Verified!");
         synchronized (payloads){
@@ -52,7 +52,7 @@ public class POSTData {
     public int deletePayload(JSONObject jsonObject){
         int key = -1;
         synchronized (payloads){
-            for(Payload payload : payloads) {
+            for(PayloadResponse payload : payloads) {
                 if(payload.equals(jsonObject)) {
                     key = payload.getKey();
                     payload.setNull();
@@ -66,7 +66,7 @@ public class POSTData {
     public int anyMatchPayload(JSONObject jsonObject){
         int key=-1;
         synchronized (payloads){ // else iterator will through concurrent modification exception
-            for(Payload payload : payloads) {
+            for(PayloadResponse payload : payloads) {
                 if(payload.equals(jsonObject)) {
                     logger.info("Match found with body->"+ payload.getKey());
                     key = payload.getKey();
