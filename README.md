@@ -14,28 +14,28 @@ You can either set up the slack bot or send queries directly. Run this with [sla
 Go through this quick [tutorial](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) to understand how to use it.
 
 
-## Slash Commands Supported 
+## Slack slash commands supported 
 Run the following slash commands in the slack after running the mock server and the slack bot server. A dialog box will appear asking for the Http request details and the corresponding response details to return. More details on what to fill in the input boxes of the dialog can be understood by understading how the mock server works. The examples below explains the queries well.
 
-### /addteam
+#### /addteam
 To create a new team. It will provide you with a secret team token. This secret team key will be used to send and add mock queries to this mock server.
 
-### /delteam
+#### /delteam
 To delete a team. Only the admin, the user who created the team can delete a team.
 
-### /addschema
+#### /addschema
 To add a schema support to the request body of the mock queries you will be adding up. Its just like a backend service rejecting the queries which are not according to the requested format. This is only for the http methods which support payloads (like PUT, POST and DEL)
 
-### /getschema
+#### /getschema
 It will return you with the schema JSON at the path
 
-### /addmock 
+#### /addmock 
 To add a mock query which is a mock request with a mock response body. A mock request is the http request you will be sending to the mockserver, and Mock response is the response that the mockserver will give you in return.
 
-### /delmock
+#### /delmock
 To delete a mockquery  
 
-### /getkey
+#### /getkey
 To get back the lost key. This command can only be used by the admin. 
 
 ## How to send your request to the mock server from your application?
@@ -45,10 +45,10 @@ Send your request as
         
 with payloads if any
 
-## Using Without the SlackBot
+## Using MockServer without the SlackBot
 To run it without use of slack bot, setup the mock server and send your queries directly to the server. The following examples explains how to send the queries. 
 
-### Create a New Team
+#### Create a new team
 Slack bot will automatically consider the adminId parameter. If you are using it without the slack bot, you need to send your adminId it it manually as in the request. For a team there will be one adminId, and only he can delete the team and perform the Get Key operation. So make sure this adminId remains a secret to you. Otherwise, any person sending the adminId within the delete team query, can delete your team! 
 
         POST http://localhost:8080/_admin/_add/_team
@@ -64,7 +64,7 @@ Slack bot will automatically consider the adminId parameter. If you are using it
 
 
 
-### Multiple Teams Can not Have Same Name
+#### Multiple teams can not have same name
 
         POST http://localhost:8080/_admin/_add/_team
         Content-Type: application/json
@@ -81,7 +81,7 @@ Slack bot will automatically consider the adminId parameter. If you are using it
 
 
 
-### Create Another Team With a Different Name
+#### Create another team with a different name
         POST http://localhost:8080/_admin/_add/_team
         Content-Type: application/json
 
@@ -96,7 +96,7 @@ Slack bot will automatically consider the adminId parameter. If you are using it
 
 
 
-### Team Can Only Be Deleted By The Admin
+#### Teams can only be deleted by the admin
         POST http://localhost:8080/_admin/_del/_team
         Content-Type: application/json
 
@@ -111,7 +111,7 @@ Slack bot will automatically consider the adminId parameter. If you are using it
 
 
 
-### Delete Second Team
+#### Delete second team
         POST http://localhost:8080/_admin/_del/_team
         Content-Type: application/json
 
@@ -126,12 +126,8 @@ Slack bot will automatically consider the adminId parameter. If you are using it
 
 
 
-### Add Mock Query With Linent Check Mode 
-It uses JSONAssert for matching the json requestBody. You can read more about it [here](https://github.com/skyscreamer/JSONassert).
-
-STRICT MODE matches all fields order of arrays and no additional fields allowed, and
-
-ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request matcher
+#### Add Mock Query 
+Here you can note that the checkMode is false(Lenient). It uses JSONAssert for matching the json requestBody. You can read more about it [here](https://github.com/skyscreamer/JSONassert). STRICT MODE matches all fields order of arrays and no additional fields allowed, and ONLY_MATCHING_FIELDS/LENIENT MODE which only matches fields provided in the request matcher
 
         POST http://localhost:8080/_admin/_add/_mock
         Content-Type: application/json
@@ -160,7 +156,7 @@ ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request m
 
 
 
-### Test Mock Query
+#### Test Mock Query
         POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
@@ -175,7 +171,7 @@ ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request m
 
 
 
-### Test Mock Query, Is The Check Lenient?
+#### Test Mock Query, Is the checks lenient?
         POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
@@ -190,7 +186,7 @@ ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request m
 
 
 
-### Add Another Mock Query On The Same Path But With Different PayloadResponse
+#### Add another Mock Query on the same path but with a different payload
         POST http://localhost:8080/_admin/_add/_mock
         Content-Type: application/json
 
@@ -216,7 +212,7 @@ ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request m
         ### MockQuery Added Successfully
 
 
-### Test MockQuery
+#### Test MockQuery
         POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
@@ -233,7 +229,7 @@ ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request m
 
 
 
-### We Can Also Delete a Particular PayloadResponse As
+#### We can also delete a particular payload response
         POST http://localhost:8080/_admin/_del/_payload
         Content-Type: application/json
 
@@ -250,7 +246,7 @@ ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request m
 
 
 
-### Test DeleteMockRequest
+#### Test the Delete MockRequest
         POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
@@ -265,7 +261,7 @@ ONLY_MATCHING_FIELDS/LENIENT which only matches fields provided in the request m
 
 
 
-### Replacing Multiple Payloads By Adding Schema At The same Path!
+#### Replacing multiple payloads by adding a Mock Schema at the same path!
 This is not allowed, a request supporting a payload can have either a schema check, or a List of Payloads to be matched with. You have to delete the payloads present at the old path and then add the schema.
 
         POST http://localhost:8080/_admin/_add/_schema
@@ -293,7 +289,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Delete All The Payloads Present At This Mockrequest.
+#### Delete all the payloads present at this mockrequest.
         POST http://localhost:8080/_admin/_del/_mock
         Content-Type: application/json
 
@@ -308,7 +304,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Trying to Add The Schema Again
+#### Adding the schema again
         POST http://localhost:8080/_admin/_add/_schema
         Content-Type: application/json
 
@@ -334,7 +330,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Test the schema - Validation Error
+#### Test the schema - Validation Error
         POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
         Content-Type: application/json
 
@@ -349,7 +345,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Test the schema - Successfull Request Body Validation
+#### Test the schema - Successfull requestBody validation
         POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
         Content-Type: application/json
 
@@ -366,7 +362,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Find The Schema Present At This Path
+#### Find the schema present at this path
         POST http://localhost:8080/_admin/_get/_schema
         Content-Type: application/json
 
@@ -383,7 +379,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Find The Schema Present At This Path
+#### Find the schema present at this path
         POST http://localhost:8080/_admin/_get/_schema
         Content-Type: application/json
 
@@ -399,7 +395,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Get The Team Key
+#### Get the team key
         POST http://localhost:8080/_admin/_get/_key
         Content-Type: application/json
 
@@ -414,7 +410,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### We Can Also Have Query Parameters As
+#### We can also have query parameters as
         POST http://localhost:8080/_admin/_add/_mock
         Content-Type: application/json
 
@@ -441,7 +437,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Test The Added Mock
+#### Test the added Mock Query
         GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=alex
         ### Expected Response
         ### {
@@ -450,7 +446,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Using Query Parameters As A Regex
+#### Using query parameters as a regex
         POST http://localhost:8080/_admin/_add/_mock
         Content-Type: application/json
 
@@ -477,7 +473,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 
 
-### Test The Added Mock Query
+#### Test the added Mock Query
         GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=missy&id=123
         ### Expected Response
         ### {
@@ -494,7 +490,7 @@ Ex: simple/path/here will be matched first then simple/[a-zA-Z]+/path
           
 
 
-#### Few more things about this server:
+## Few more things about this server:
 1. You can also send the above slash commands without slack directly as an Http request. Equivalent to the above slash commands, send the JSON with above details to-
 
         http//localhost:8080/_admin/_add/_team
@@ -526,7 +522,7 @@ Ex: simple/path/here will be matched first then simple/[a-zA-Z]+/path
 11. All the data, payloadResponse, and the requests must be in JSON format. Other content types are not supported
 
 
-#### Also as of now
+## Also, as of now
 
 1. Response Body is not validated anytime, so if response string is not valid, corresponding http response may not be valid.
 
