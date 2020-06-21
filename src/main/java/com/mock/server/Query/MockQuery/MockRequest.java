@@ -16,7 +16,7 @@ public class MockRequest {
     private String queryParametersRegex;    // ?complex=[a-zA-Z]+&query=parameters[0-9]+
     private boolean checkMode = false;      // PayLoad matching to be STRICT(true) or LENIENT(false)
 
-    MockRequest() {
+    public MockRequest() {
 
     }
 

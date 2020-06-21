@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
@@ -44,7 +45,7 @@ public class ServiceFactory {
 
     private boolean isLoading;
 
-    private ServiceFactory( ObjectFactory<MockServer> mockServerFactory) throws IllegalAccessException{
+    ServiceFactory(ObjectFactory <MockServer> mockServerFactory) throws IllegalAccessException{
 
         this.mockServerFactory = mockServerFactory;
         keyTeamMap = new ConcurrentHashMap <>();
@@ -53,8 +54,12 @@ public class ServiceFactory {
 
         try {
             logger.info("LOADING OLD DATA...");
+            StopWatch watch= new StopWatch();
+            watch.start();
             int total = loadOperations();
+            watch.stop();
             logger.info("LOADED "+total+" OPERATIONS SUCCESSFULLY!");
+            logger.info("TOTAL TIME TAKEN: "+watch.getTotalTimeMillis()+" ms");
         }catch( IllegalAccessException e) {
             logger.info("Error in reading the file Operations!");
             throw e;
