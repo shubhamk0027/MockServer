@@ -2,7 +2,6 @@ package com.mock.server;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.SecureRandom;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class APIKeyGenerator {
 
@@ -37,9 +36,8 @@ public class APIKeyGenerator {
 //        return  counter.longValue();
 //    }
 
-    private static int KEY_LEN = 64;
-
     public static String getKey(String teamName) {
+        int KEY_LEN = 64;
         byte[] bytes = new byte[KEY_LEN / 8];
         // since the number of teams will be limited, api key generated will be unique
         new SecureRandom().nextBytes(bytes);

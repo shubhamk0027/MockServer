@@ -39,13 +39,13 @@ public class ServiceFactory {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final int KEY_LEN = 64;
 
-    private final ObjectFactory<MockServer> mockServerFactory;
+    private final ObjectFactory <MockServer> mockServerFactory;
     private final ConcurrentHashMap <String, Team> keyTeamMap;
     private final ConcurrentHashMap <String, Team> nameTeamMap;
 
     private boolean isLoading;
 
-    ServiceFactory(ObjectFactory <MockServer> mockServerFactory) throws IllegalAccessException{
+    ServiceFactory(ObjectFactory <MockServer> mockServerFactory) throws IllegalAccessException {
 
         this.mockServerFactory = mockServerFactory;
         keyTeamMap = new ConcurrentHashMap <>();
@@ -54,16 +54,16 @@ public class ServiceFactory {
 
         try {
             logger.info("LOADING OLD DATA...");
-            StopWatch watch= new StopWatch();
+            StopWatch watch = new StopWatch();
             watch.start();
             int total = loadOperations();
             watch.stop();
-            logger.info("LOADED "+total+" OPERATIONS SUCCESSFULLY!");
-            logger.info("TOTAL TIME TAKEN: "+watch.getTotalTimeMillis()+" ms");
-        }catch( IllegalAccessException e) {
+            logger.info("LOADED " + total + " OPERATIONS SUCCESSFULLY!");
+            logger.info("TOTAL TIME TAKEN: " + watch.getTotalTimeMillis() + " ms");
+        }catch(IllegalAccessException e) {
             logger.info("Error in reading the file Operations!");
             throw e;
-        }catch( IOException e){
+        }catch(IOException e) {
             logger.info("No Log file found! No operations loaded!");
         }
 
@@ -72,10 +72,10 @@ public class ServiceFactory {
 
 
     // Load operations from the appender/operations.log file
-    public int  loadOperations() throws IllegalAccessException, IOException {
+    public int loadOperations() throws IllegalAccessException, IOException {
         FileInputStream fstream = new FileInputStream("operations.log");
         BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-        int total=0;
+        int total = 0;
 
         String strLine;
         while((strLine = br.readLine()) != null) {
@@ -132,7 +132,7 @@ public class ServiceFactory {
                     break;
                 }
             String teamName = body.substring(j, i - 1);
-            String adminId = body.substring(i,body.length()-1);
+            String adminId = body.substring(i, body.length() - 1);
             MockServer mockServer = mockServerFactory.getObject();
             Team newDevTeam = new Team(apiKey, teamName, adminId, mockServer);
             nameTeamMap.put(teamName, newDevTeam);
@@ -156,6 +156,7 @@ public class ServiceFactory {
 
     /**
      * Admin Operation 2-> Delete a team
+     *
      * @param body JSON String of type DeleteQuery
      * @throws IllegalAccessException  Not an admin
      * @throws JsonProcessingException Wrong Query
@@ -167,8 +168,8 @@ public class ServiceFactory {
         if(!keyTeamMap.containsKey(deleteTeamQuery.getTeamKey()))
             throw new IllegalArgumentException("No Team exists with this key!");
 
-        if(!keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId().equals(deleteTeamQuery.getAdminId())){
-            logger.info("Actual "+keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId()+"|"+deleteTeamQuery.getAdminId());
+        if(!keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId().equals(deleteTeamQuery.getAdminId())) {
+            logger.info("Actual " + keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId() + "|" + deleteTeamQuery.getAdminId());
             throw new IllegalAccessException("Only the Admin can delete a team!");
         }
 
@@ -182,6 +183,7 @@ public class ServiceFactory {
 
     /**
      * Admin Operation 3 ->  Get the Api Key
+     *
      * @param body JSON string of Create Team Query
      * @return the Api key
      * @throws IllegalAccessException  Not an admin
@@ -204,6 +206,7 @@ public class ServiceFactory {
 
     /**
      * Admin Operation 4-> Add a schema
+     *
      * @param body JSON string of MockSchema
      * @throws JsonProcessingException Wrong Query
      * @throws IllegalAccessException  Wrong API key
@@ -219,6 +222,7 @@ public class ServiceFactory {
 
     /**
      * Admin Operation 5-> Add a Mock Query
+     *
      * @param body JSON string of Mock Query
      * @throws JsonProcessingException Wrong Query String
      * @throws IllegalAccessException  Wrong API key
@@ -234,6 +238,7 @@ public class ServiceFactory {
 
     /**
      * Admin Operation 6-> Get the schema corresponding to a path
+     *
      * @param body JSON String of GetSchemaQuery
      * @return Schema JSON as string
      * @throws JsonProcessingException Wrong Query String
@@ -248,44 +253,48 @@ public class ServiceFactory {
             throw new IllegalArgumentException("Schema is only associated with POST, PUT AND DEL query!");
 
         String path = getSchemaQuery.getPath();
-        int i=0;
-        for(;i<path.length();i++) if(path.charAt(i)=='?') break;
-        ArrayList<String> pathList =
-                Verifier.getSimplePathList(getSchemaQuery.getPath().substring(0,i), getSchemaQuery.getMethod().val);
-        if(i<path.length()-1) pathList.add(path.substring(i+1)); // ignore '?'
+        int i = 0;
+        for(; i < path.length(); i++) if(path.charAt(i) == '?') break;
+        ArrayList <String> pathList =
+                Verifier.getSimplePathList(getSchemaQuery.getPath().substring(0, i), getSchemaQuery.getMethod().val);
+        if(i < path.length() - 1) pathList.add(path.substring(i + 1)); // ignore '?'
 
-        for(String s: pathList) logger.info("->"+s);
+        for(String s : pathList) logger.info("->" + s);
         return keyTeamMap.get(getSchemaQuery.getTeamKey()).getMockServer().getSchema(pathList);
     }
 
 
     /**
      * Admin Operation 7-> Delete a Mock Query
+     *
      * @param body JSON string of type DeleteMockQuery
      * @throws JsonProcessingException Wrong Query String
      * @throws IllegalAccessException  Wrong API key
      */
     public void deleteMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
         DeleteMockRequest deleteMockRequest = mapper.readValue(body, DeleteMockRequest.class);
-        if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey())) throw new IllegalAccessException("You seems to have a wrong API key!");
+        if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey()))
+            throw new IllegalAccessException("You seems to have a wrong API key!");
         keyTeamMap.get(deleteMockRequest.getTeamKey()).getMockServer().deleteMockRequest(deleteMockRequest);
         if(!isLoading) appender.info("-M " + mapper.writeValueAsString(deleteMockRequest)); // compress and write
     }
 
     public void deleteAPayload(String body) throws JsonProcessingException, IllegalAccessException {
         DeleteMockRequest deleteMockRequest = mapper.readValue(body, DeleteMockRequest.class);
-        if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey())) throw new IllegalAccessException("You seems to have a wrong API key!");
+        if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey()))
+            throw new IllegalAccessException("You seems to have a wrong API key!");
         keyTeamMap.get(deleteMockRequest.getTeamKey()).getMockServer().deleteAPayloadResponse(deleteMockRequest);
         if(!isLoading) appender.info("-P " + mapper.writeValueAsString(deleteMockRequest)); // compress and write
     }
 
     /**
      * Fake Server Request Handler for POST Type Request
+     *
      * @param key      API key
      * @param pathList Absolute path
      * @param body     payload JSON String
      * @return MockResponse at the path
-     * @throws IllegalAccessException  MockResponse does not exists or Wrong API Key
+     * @throws IllegalAccessException MockResponse does not exists or Wrong API Key
      */
     public MockResponse postTypeResponse(String key, ArrayList <String> pathList, String body) throws IllegalAccessException {
         logger.info("Received a Post request for key: " + key);
@@ -296,10 +305,11 @@ public class ServiceFactory {
 
     /**
      * Fake Server Request Handler for GET Type Request
+     *
      * @param key      API key
      * @param pathList Absolute path
      * @return MockResponse at the path
-     * @throws IllegalAccessException  MockResponse does not exists or Wrong API Key
+     * @throws IllegalAccessException MockResponse does not exists or Wrong API Key
      */
     public MockResponse getTypeResponse(String key, ArrayList <String> pathList) throws IllegalAccessException {
         logger.info("Received a GET request for key: " + key);
