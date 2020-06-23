@@ -9,13 +9,8 @@ This MockServer comes to the rescue by helping you create a fake server that wil
 You can either set up the slack bot or send queries directly. Run this with [slack bot](https://github.com/shubhamk0027/SlackBot) after adding bearer token and slack client token in the environment parameters as
 "SLACK_BOT_TOKEN=FULL_TOKEN_HERE; SLACK_SIGNING_SECRET=SIGNING_SECRET_HERE" without the quotes. 
 
-## TLDR;
-
-Go through this quick [tutorial](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) to understand how to use it.
-
-
 ## Slack slash commands supported 
-Run the following slash commands in the slack after running the mock server and the slack bot server. A dialog box will appear asking for the Http request details and the corresponding response details to return. More details on what to fill in the input boxes of the dialog can be understood by understading how the mock server works. The examples below explains the queries well.
+See the slackbot in [action](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) to understand how to use it. Simply run the following slash commands in the slack after running the mock server and the slack bot server. A dialog box will appear asking for the Http request details and the corresponding response details to return. More details on what to fill in the input boxes of the dialog can be understood by understading how the mock server works. The examples [below](https://github.com/shubhamk0027/MockServer#using-mockserver-without-the-slackbot) explains the queries.
 
 #### /addteam
 To create a new team. It will provide you with a secret team token. This secret team key will be used to send and add mock queries to this mock server.
@@ -491,16 +486,18 @@ Ex: simple/path/here will be matched first then simple/[a-zA-Z]+/path
 
 
 ## Few more things about this server:
-1. You can also send the above slash commands without slack directly as an Http request. Equivalent to the above slash commands, send the JSON with above details to-
+1. You can send your queries via the following paths, to update the mock server as a POST request with the payloads. 
 
         http//localhost:8080/_admin/_add/_team
         http//localhost:8080/_admin/_add/_schema
         http//localhost:8080/_admin/_add/_mock
+        http//localhost:8080/_admin/_add/_payload
         http//localhost:8080/_admin/_get/_schema
         http//localhost:8080/_admin/_get/_key
         http//localhost:8080/_admin/_del/_team
         http//localhost:8080/_admin/_del/_mock
         
+
 2. All the paths in the mock queries should be relative not absolute and without query parameters. Query parameters should be added in a separate field
 
 3. The path can have directory names as a regular expression as should in the tutorial above
