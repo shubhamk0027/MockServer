@@ -1,14 +1,13 @@
 # MockServer
 Have your team's development stopped because of the limits or the cost on the number of API calls you can make to a service? Or your team's backend service on which your application depends is not ready yet? Or maybe because the third party service on which your backend depends is not available?
 
-
 MockServer comes to the rescue by helping you create a fake server that will send fake responses to your application for fastening the development process, and easing the testing process while verifying your http/https requests and sending the response you desire for that particular request.
 
 ## Contents
-1. Quick Setup
-2. Using via SlackBot
-3. Using MockServer Without Slackbot
-4. Performance
+1. [Quick Setup](https://github.com/shubhamk0027/MockServer/#1-quick-setup)
+2. [Using via SlackBot](https://github.com/shubhamk0027/MockServer/#2-using-via-slackbot)
+3. [Using MockServer Without Slackbot](https://github.com/shubhamk0027/MockServer/#3-using-mockserver-without-slackbot)
+4. [Performance](https://github.com/shubhamk0027/MockServer/#4-performance)
 
 ## 1. Quick Setup
 
@@ -29,7 +28,7 @@ with payloads if any. Change localhost:8080 to the address where your mockserver
 
 ## 2. Using via SlackBot
 
-See the slackbot in [action](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) to understand how to use it. Simply run the following slash commands in the slack. A dialog box will appear asking for the Http request details and the corresponding response parameters to return. More details on what to fill in the input boxes of the dialog can be understood by understading the json the mock server accepts. See the examples in [Using Mockserver Without SlackBot]
+See the slackbot in [action](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) to understand how to use it. Simply run the following slash commands in the slack. A dialog box will appear asking for the Http request details and the corresponding response parameters to return. More details on what to fill in the input boxes of the dialog can be understood by understading the json the mock server accepts. See the examples in [Using Mockserver Without SlackBot](https://github.com/shubhamk0027/MockServer/#3-using-mockserver-without-slackbot).
 
 #### /addteam
 
