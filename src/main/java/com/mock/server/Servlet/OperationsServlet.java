@@ -98,7 +98,7 @@ public class OperationsServlet extends HttpServlet {
                     logger.info("Received Delete A PayloadResponse!");
                     serviceFactory.deleteAPayload(body);
                     PrintWriter out = resp.getWriter();
-                    out.write("PayloadResponse And Response Deleted Successfully!");
+                    out.write("Payload And Response Deleted Successfully!");
                     break;
                 }
                 default:

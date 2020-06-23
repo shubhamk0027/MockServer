@@ -4,13 +4,13 @@ public class Team {
 
     private final String teamKey;
     private final String teamName;
-    private final String adminId;
+    private final String password;
     private final MockServer mockServer;
 
-    public Team(String teamKey, String teamName, String adminId, MockServer mockServer) {
+    public Team(String teamKey, String teamName, String password, MockServer mockServer) {
         this.teamKey = teamKey;
         this.teamName = teamName;
-        this.adminId = adminId;
+        this.password = password;
         this.mockServer = mockServer;
     }
 
@@ -26,8 +26,8 @@ public class Team {
         return mockServer;
     }
 
-    public String getAdminId() {
-        return adminId;
+    public String getPassword() {
+        return password;
     }
 
 }

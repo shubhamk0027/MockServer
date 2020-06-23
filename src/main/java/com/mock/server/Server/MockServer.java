@@ -113,7 +113,6 @@ public class MockServer {
 
         TreeNode trav = root;
         for(Directory dir : pathList) {
-            logger.info("->" + trav.getName());
             if(dir instanceof DirName && trav.getChildNames().containsKey(dir.getDirName()))
                 trav = trav.getChildNames().get(dir.getDirName());
             else if(dir instanceof DirPattern && trav.getChildPatterns().containsKey(dir.getDirName()))
@@ -145,7 +144,7 @@ public class MockServer {
                 deleteMockRequest.getQueryParametersRegex());
 
         TreeNode trav = traverseAndFind(pathList);
-        if(trav == null) throw new IllegalArgumentException("No such path not exists!");
+        if(trav == null) throw new IllegalArgumentException("This path does not exists!");
         trav.deleteAll();
     }
 
@@ -154,7 +153,7 @@ public class MockServer {
         if(deleteMockRequest.getMethod() != Method.POST &&
                 deleteMockRequest.getMethod() != Method.PUT &&
                 deleteMockRequest.getMethod() != Method.DEL)
-            throw new IllegalArgumentException("This Operation is only allowed for methods having a payload body(POST/PUT/DEL)!");
+            throw new IllegalArgumentException("This operation is only allowed for methods having a payload body(POST/PUT/DEL)!");
 
         JSONObject jsonObject = new JSONObject(deleteMockRequest.getRequestBody());
 
@@ -172,7 +171,7 @@ public class MockServer {
                 deleteMockRequest.getQueryParametersRegex());
 
         TreeNode trav = traverseAndFind(pathList);
-        if(trav == null) throw new IllegalArgumentException("No such path not exists!");
+        if(trav == null) throw new IllegalArgumentException("This path does not exists!");
         trav.deleteAPayload(jsonObject);
     }
 
@@ -263,7 +262,7 @@ public class MockServer {
 
     public String getSchema(ArrayList <String> pathList) throws IllegalArgumentException {
         TreeNode node = findMatch(root, pathList, 0);
-        if(node == null) throw new IllegalArgumentException("Path does not exists!");
+        if(node == null) throw new IllegalArgumentException("This path does not exists!");
         return node.getSchema();
     }
 

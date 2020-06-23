@@ -1,11 +1,11 @@
 package com.mock.server.Query;
 
-public class CreateTeamQuery {
+public class TeamQuery {
 
     private String teamName;
-    private String adminId;
+    private String password;
 
-    public CreateTeamQuery() {
+    public TeamQuery() {
 
     }
 
@@ -17,11 +17,11 @@ public class CreateTeamQuery {
         this.teamName = teamName;
     }
 
-    public String getAdminId() {
-        return adminId;
+    public String getPassword() {
+        return password;
     }
 
-    public void setAdminId(String adminId) {
-        this.adminId = adminId;
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

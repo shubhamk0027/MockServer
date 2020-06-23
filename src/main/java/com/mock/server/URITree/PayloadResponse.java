@@ -30,6 +30,7 @@ public class PayloadResponse {
     }
 
     public boolean isSameThenDelete(JSONObject jsonObject) {
+        if(actualRequestBody==null) return false;
         try {
             JSONAssert.assertEquals(jsonObject, actualRequestBody, true);
             actualRequestBody = null;

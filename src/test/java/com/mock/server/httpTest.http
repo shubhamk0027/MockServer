@@ -1,14 +1,29 @@
+### Create a New Team invalid TeamName
+POST http://localhost:8080/_admin/_add/_team
+Content-Type: application/json
+
+{
+  "teamName":"1Team",
+  "password":"password1"
+}
+
+### Expected Response
+### Team name should start with an alphabet!
+
+
+
+
 ### Create a New Team
 POST http://localhost:8080/_admin/_add/_team
 Content-Type: application/json
 
 {
-  "teamName":"Dev1",
-  "adminId":"admin1"
+  "teamName":"Team1",
+  "password":"password1"
 }
 
 ### Expected Response
-### Your Team Key ca72678b69c3c1ed
+### Your Team Key ff214a0e08463be2
 
 
 
@@ -18,8 +33,8 @@ POST http://localhost:8080/_admin/_add/_team
 Content-Type: application/json
 
 {
-  "teamName":"Dev1",
-  "adminId":"admin2"
+  "teamName":"Team1",
+  "password":"password2"
 }
 
 ### Expected Response
@@ -33,27 +48,27 @@ POST http://localhost:8080/_admin/_add/_team
 Content-Type: application/json
 
 {
-  "teamName":"Dev2",
-  "adminId":"admin2"
+  "teamName":"Team2",
+  "password":"password2"
 }
 
 ### Expected Response
-### Your Team Key 87879c21b7b3c632
+### Your Team Key 714813d0003877a3
 
 
 
 
-### Delete Second Team by wrong admin
+### Delete Second Team with wrong password
 POST http://localhost:8080/_admin/_del/_team
 Content-Type: application/json
 
 {
-  "teamKey":"c29219479096998a",
-  "adminId":"admin1"
+  "teamName":"Team2",
+  "password":"password1"
 }
 
 ### Expected Response
-### Only the Admin can delete a team!
+### Wrong Password!
 
 
 
@@ -63,8 +78,8 @@ POST http://localhost:8080/_admin/_del/_team
 Content-Type: application/json
 
 {
-  "teamKey":"87879c21b7b3c632",
-  "adminId":"admin2"
+  "teamName":"Team2",
+  "password":"password2"
 }
 
 ### Expected Response
@@ -79,7 +94,7 @@ Content-Type: application/json
 
 {
 	"mockRequest":{
-		"teamKey":"ca72678b69c3c1ed",
+		"teamKey":"ff214a0e08463be2",
 		"method":"POST",
 		"path":"/items/electronics/[a-zA-Z]+/details",
         "checkMode": "false",
@@ -102,7 +117,7 @@ Content-Type: application/json
 
 
 ### Test Mock Query
-POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
 Content-Type: application/json
 
 {
@@ -117,7 +132,7 @@ Content-Type: application/json
 
 
 ### Test Mock Query is it lenient?
-POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
 Content-Type: application/json
 
 {
@@ -137,7 +152,7 @@ Content-Type: application/json
 
 {
 	"mockRequest":{
-		"teamKey":"ca72678b69c3c1ed",
+		"teamKey":"ff214a0e08463be2",
 		"method":"POST",
 		"path":"/items/electronics/[a-zA-Z]+/details",
         "checkMode": "true",
@@ -158,7 +173,7 @@ Content-Type: application/json
 
 
 ### Test MockQuery
-POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
 Content-Type: application/json
 
 {
@@ -179,20 +194,20 @@ POST http://localhost:8080/_admin/_del/_payload
 Content-Type: application/json
 
 {
-  "teamKey":"ca72678b69c3c1ed",
+  "teamKey":"ff214a0e08463be2",
   "method":"POST",
   "path":"/items/electronics/[a-zA-Z]+/details",
   "requestBody":"{\"username\":\"missy\",\"userId\":1234567890}"
 }
 
 ### Expected Response
-### PayloadResponse And Response Deleted Successfully!
+### Payload And Response Deleted Successfully!
 
 
 
 
 ### Test DeleteMockRequest
-POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
 Content-Type: application/json
 
 {
@@ -212,7 +227,7 @@ Content-Type: application/json
 
 {
   "mockSchema":{
-    "teamKey":"ca72678b69c3c1ed",
+    "teamKey":"ff214a0e08463be2",
     "method":"POST",
     "jsonSchema":"{\"properties\":{\"username\":{\"type\":\"string\"},\"userId\":{\"type\":\"number\"}}}",
     "path":"/items/electronics/[a-zA-Z]+/details"
@@ -227,8 +242,7 @@ Content-Type: application/json
 }
 
 ### Expected Response
-### A PayloadResponse List is also attached to this path try deleting the payloadResponse List at his path and then continue!
-
+### A payload response List is also attached to this path, try deleting the payload List at his path and then continue!
 
 
 
@@ -237,7 +251,7 @@ POST http://localhost:8080/_admin/_del/_mock
 Content-Type: application/json
 
 {
-  "teamKey":"ca72678b69c3c1ed",
+  "teamKey":"ff214a0e08463be2",
   "method":"POST",
   "path":"/items/electronics/[a-zA-Z]+/details"
 }
@@ -253,7 +267,7 @@ Content-Type: application/json
 
 {
   "mockSchema":{
-    "teamKey":"ca72678b69c3c1ed",
+    "teamKey":"ff214a0e08463be2",
     "method":"POST",
     "jsonSchema":"{\"properties\":{\"username\":{\"type\":\"string\"},\"userId\":{\"type\":\"number\"}}}",
     "path":"/items/electronics/[a-zA-Z]+/details"
@@ -274,7 +288,7 @@ Content-Type: application/json
 
 
 ### Test the schema - Validation Error
-POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
+POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphonePlus/details
 Content-Type: application/json
 
 {
@@ -289,7 +303,7 @@ Content-Type: application/json
 
 
 ### Test the schema - Successfull request Validation
-POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
+POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphonePlus/details
 Content-Type: application/json
 
 {
@@ -310,7 +324,7 @@ POST http://localhost:8080/_admin/_get/_schema
 Content-Type: application/json
 
 {
-  "teamKey":"ca72678b69c3c1ed",
+  "teamKey":"ff214a0e08463be2",
   "method":"POST",
   "path":"/items/electronics/iphone11/details"
 }
@@ -327,7 +341,7 @@ POST http://localhost:8080/_admin/_get/_schema
 Content-Type: application/json
 
 {
-  "teamKey":"ca72678b69c3c1ed",
+  "teamKey":"ff214a0e08463be2",
   "method":"POST",
   "path":"/items/electronics/iphoneElevenPro/details"
 }
@@ -343,12 +357,12 @@ POST http://localhost:8080/_admin/_get/_key
 Content-Type: application/json
 
 {
-  "teamName":"Dev1",
-  "adminId":"admin1"
+  "teamName":"Team1",
+  "password":"password1"
 }
 
 ### Expected Response
-### Your Team Key ca72678b69c3c1ed
+### Your Team Key ff214a0e08463be2
 
 
 
@@ -359,7 +373,7 @@ Content-Type: application/json
 
 {
   "mockRequest":{
-    "teamKey":"ca72678b69c3c1ed",
+    "teamKey":"ff214a0e08463be2",
     "method":"GET",
     "path":"/items/grocery/details",
     "queryParameters": "?name=alex"
@@ -381,7 +395,7 @@ Content-Type: application/json
 
 
 ### Test the added Mock
-GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=alex
+GET http://localhost:8080/ff214a0e08463be2/items/grocery/details?name=alex
 ### Expected Response
 ### {
 ###  "price": "50000"
@@ -395,7 +409,7 @@ Content-Type: application/json
 
 {
   "mockRequest":{
-    "teamKey":"ca72678b69c3c1ed",
+    "teamKey":"ff214a0e08463be2",
     "method":"GET",
     "path":"/items/grocery/details",
     "queryParametersRegex": "?name=[a-zA-Z]+&id=[0-9]+"
@@ -417,7 +431,7 @@ Content-Type: application/json
 
 
 ### Test the added Mock
-GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=missy&id=123
+GET http://localhost:8080/ff214a0e08463be2/items/grocery/details?name=missy&id=123
 ### Expected Response
 ### {
 ###  "info": "All Set!"

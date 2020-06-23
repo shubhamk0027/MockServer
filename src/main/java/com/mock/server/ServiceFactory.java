@@ -111,7 +111,7 @@ public class ServiceFactory {
     /**
      * Admin Function Operation 1 Create Team Query
      *
-     * @param body String of Type "ApiKey TeamName adminId" for a loading operation OR a JSON string of Create Team Query if not a loading operation
+     * @param body String of Type "ApiKey TeamName password" for a loading operation OR a JSON string of Create Team Query if not a loading operation
      * @return the apiKey
      * @throws JsonProcessingException  Wrong Json Query
      * @throws IllegalArgumentException Team Name is Exists
@@ -132,24 +132,34 @@ public class ServiceFactory {
                     break;
                 }
             String teamName = body.substring(j, i - 1);
-            String adminId = body.substring(i, body.length() - 1);
+            String password = body.substring(i, body.length() - 1);
             MockServer mockServer = mockServerFactory.getObject();
-            Team newDevTeam = new Team(apiKey, teamName, adminId, mockServer);
-            nameTeamMap.put(teamName, newDevTeam);
-            keyTeamMap.put(apiKey, newDevTeam);
+            Team newTeam = new Team(apiKey, teamName, password, mockServer);
+            nameTeamMap.put(teamName, newTeam);
+            keyTeamMap.put(apiKey, newTeam);
             return apiKey;
         }
 
-        CreateTeamQuery createTeamQuery = mapper.readValue(body, CreateTeamQuery.class);
-        if(nameTeamMap.containsKey(createTeamQuery.getTeamName()))
+        TeamQuery teamQuery = mapper.readValue(body, TeamQuery.class);
+
+        // teamName verification
+        for(int i=0;i<teamQuery.getTeamName().length();i++) {
+            if(i==0 && !Character.isAlphabetic(teamQuery.getTeamName().charAt(i))){
+                throw new IllegalArgumentException("Team name should start with an alphabet!");
+            }else if(!Character.isLetterOrDigit(teamQuery.getTeamName().charAt(i))) {
+                throw new IllegalArgumentException("Team Name can not contain special characters!");
+            }
+        }
+
+        if(nameTeamMap.containsKey(teamQuery.getTeamName()))
             throw new IllegalArgumentException("Team Name exists. Choose a different Team Name!");
-        String apiKey = createKey(createTeamQuery.getTeamName());
+        String apiKey = createKey(teamQuery.getTeamName());
 
         MockServer mockServer = mockServerFactory.getObject();
-        Team newDevTeam = new Team(apiKey, createTeamQuery.getTeamName(), createTeamQuery.getAdminId(), mockServer);
-        nameTeamMap.put(createTeamQuery.getTeamName(), newDevTeam);
-        keyTeamMap.put(apiKey, newDevTeam);
-        appender.info("+T " + apiKey + " " + createTeamQuery.getTeamName() + " " + createTeamQuery.getAdminId());
+        Team newTeam = new Team(apiKey, teamQuery.getTeamName(), teamQuery.getPassword(), mockServer);
+        nameTeamMap.put(teamQuery.getTeamName(), newTeam);
+        keyTeamMap.put(apiKey, newTeam);
+        appender.info("+T " + apiKey + " " + teamQuery.getTeamName() + " " + teamQuery.getPassword());
         return apiKey;
     }
 
@@ -158,26 +168,24 @@ public class ServiceFactory {
      * Admin Operation 2-> Delete a team
      *
      * @param body JSON String of type DeleteQuery
-     * @throws IllegalAccessException  Not an admin
+     * @throws IllegalAccessException  Wrong Password
      * @throws JsonProcessingException Wrong Query
      */
     public void deleteTeam(String body) throws IllegalAccessException, JsonProcessingException {
 
-        DeleteTeamQuery deleteTeamQuery = mapper.readValue(body, DeleteTeamQuery.class);
+        TeamQuery teamQuery = mapper.readValue(body, TeamQuery.class);
 
-        if(!keyTeamMap.containsKey(deleteTeamQuery.getTeamKey()))
-            throw new IllegalArgumentException("No Team exists with this key!");
+        if(!nameTeamMap.containsKey(teamQuery.getTeamName()))
+            throw new IllegalArgumentException("Invalid Team Name!");
 
-        if(!keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId().equals(deleteTeamQuery.getAdminId())) {
-            logger.info("Actual " + keyTeamMap.get(deleteTeamQuery.getTeamKey()).getAdminId() + "|" + deleteTeamQuery.getAdminId());
-            throw new IllegalAccessException("Only the Admin can delete a team!");
+        if(!nameTeamMap.get(teamQuery.getTeamName()).getPassword().equals(teamQuery.getPassword())) {
+            throw new IllegalAccessException("Wrong Password!");
         }
 
-        String teamName = keyTeamMap.get(deleteTeamQuery.getTeamKey()).getTeamName();
-        nameTeamMap.remove(teamName);
-        keyTeamMap.remove(deleteTeamQuery.getTeamKey());
+        keyTeamMap.remove(nameTeamMap.get(teamQuery.getTeamName()).getTeamKey());
+        nameTeamMap.remove(teamQuery.getTeamName());
 
-        if(!isLoading) appender.info("-T " + mapper.writeValueAsString(deleteTeamQuery));
+        if(!isLoading) appender.info("-T " + mapper.writeValueAsString(teamQuery));
     }
 
 
@@ -186,21 +194,20 @@ public class ServiceFactory {
      *
      * @param body JSON string of Create Team Query
      * @return the Api key
-     * @throws IllegalAccessException  Not an admin
+     * @throws IllegalAccessException  Wrong Password
      * @throws JsonProcessingException Wrong Query Format
      */
     public String getApiKey(String body) throws IllegalAccessException, JsonProcessingException {
-        CreateTeamQuery createTeamQuery = mapper.readValue(body, CreateTeamQuery.class);
+        TeamQuery teamQuery = mapper.readValue(body, TeamQuery.class);
 
-        if(!nameTeamMap.containsKey(createTeamQuery.getTeamName()))
-            throw new IllegalArgumentException("This Team Name is invalid!");
+        if(!nameTeamMap.containsKey(teamQuery.getTeamName()))
+            throw new IllegalArgumentException("Invalid Team Name!");
 
-        if(!nameTeamMap.get(createTeamQuery.getTeamName()).getAdminId().equals(createTeamQuery.getAdminId())) {
-            logger.info("Actual " + nameTeamMap.get(createTeamQuery.getTeamName()).getAdminId() + " but " + createTeamQuery.getAdminId());
-            throw new IllegalAccessException("Only the Admin can have acess the api key!");
+        if(!nameTeamMap.get(teamQuery.getTeamName()).getPassword().equals(teamQuery.getPassword())) {
+            throw new IllegalAccessException("Wrong Password!");
         }
 
-        return nameTeamMap.get(createTeamQuery.getTeamName()).getTeamKey();
+        return nameTeamMap.get(teamQuery.getTeamName()).getTeamKey();
     }
 
 

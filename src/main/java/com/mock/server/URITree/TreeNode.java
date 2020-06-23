@@ -67,23 +67,23 @@ public class TreeNode {
         if(leafValue == null) leafValue = new PayloadList();
         else if(leafValue instanceof SchemaResponse)
             throw new IllegalArgumentException("A JSON SCHEMA exists at this path, " +
-                    "to continue, delete that path and try adding the payloadResponse again!");
+                    "to continue, delete that path and try adding the payload response again!");
         PayloadList payloadList = (PayloadList) leafValue;
         payloadList.addPayload(payloadResponse);
     }
 
     public synchronized void deleteAPayload(JSONObject requestBody) {
         if(leafValue == null || leafValue instanceof SchemaResponse)
-            throw new IllegalArgumentException("No Matching payload found!");
+            throw new IllegalArgumentException("No matching payload found!");
         if(!((PayloadList) leafValue).deletePayload(requestBody))
-            throw new IllegalArgumentException("No matching PayloadResponse Body found!");
+            throw new IllegalArgumentException("No matching payload response body found!");
     }
 
     // If the Leaf Node is a SchemaResponse
 
     public synchronized void addSchema(Schema schema, MockResponse mockResponse) {
         if(leafValue != null && leafValue instanceof PayloadList)
-            throw new IllegalArgumentException("A PayloadResponse List is also attached " +
+            throw new IllegalArgumentException("A payload response List is also attached " +
                     "to this path, try deleting the payload List at his path and then continue!");
         leafValue = new SchemaResponse(schema, mockResponse);
     }
@@ -91,8 +91,8 @@ public class TreeNode {
     public synchronized String getSchema() {
         if(leafValue == null) throw new IllegalArgumentException("No value exists at this path!");
         if(leafValue instanceof PayloadList)
-            throw new IllegalArgumentException("A PayloadResponse list is present at this path! " +
-                    "No PayloadResponse Schema found!");
+            throw new IllegalArgumentException("A payload response list is present at this path! " +
+                    "No payload response schema found!");
         return ((SchemaResponse) leafValue).getSchema();
     }
 

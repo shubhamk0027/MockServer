@@ -2,7 +2,7 @@ package com.mock.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mock.server.Query.CreateTeamQuery;
+import com.mock.server.Query.TeamQuery;
 import com.mock.server.Query.Method;
 import com.mock.server.Query.MockQuery.MockQuery;
 import com.mock.server.Query.MockQuery.MockRequest;
@@ -136,10 +136,10 @@ public class Application {
 
 
     String performanceTest() throws JsonProcessingException, IllegalAccessException {
-        CreateTeamQuery createTeamQuery = new CreateTeamQuery();
-        createTeamQuery.setAdminId("Test1" + "Admin");
-        createTeamQuery.setTeamName("Test1");
-        String teamKey = serviceFactory.createTeam(mapper.writeValueAsString(createTeamQuery));
+        TeamQuery teamQuery = new TeamQuery();
+        teamQuery.setPassword("Password1");
+        teamQuery.setTeamName("Test1");
+        String teamKey = serviceFactory.createTeam(mapper.writeValueAsString(teamQuery));
         int numberOfRequests = 1000;
         String statsGET = memoryUsageTestGET(teamKey, numberOfRequests);
         String statsPOST = memoryUsageTestPOST(teamKey, numberOfRequests);
