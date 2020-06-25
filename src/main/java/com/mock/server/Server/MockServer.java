@@ -82,7 +82,14 @@ public class MockServer {
         if(mockQuery.getMockRequest().getMethod() == Method.POST ||
                 mockQuery.getMockRequest().getMethod() == Method.PUT ||
                 mockQuery.getMockRequest().getMethod() == Method.DEL) {
-            JSONObject payloadBody = new JSONObject(mockQuery.getMockRequest().getRequestBody());
+
+            JSONObject payloadBody;
+            if(mockQuery.getMockRequest().getRequestBody() == null) {
+                payloadBody = new JSONObject();
+            }else {
+                payloadBody = new JSONObject(mockQuery.getMockRequest().getRequestBody());
+            }
+
             TreeNode node = traverseAndAdd(pathList);
             PayloadResponse payloadResponse = new PayloadResponse(
                     mockQuery.getMockRequest().getCheckMode(),
@@ -155,7 +162,12 @@ public class MockServer {
                 deleteMockRequest.getMethod() != Method.DEL)
             throw new IllegalArgumentException("This operation is only allowed for methods having a payload body(POST/PUT/DEL)!");
 
-        JSONObject jsonObject = new JSONObject(deleteMockRequest.getRequestBody());
+        JSONObject jsonObject;
+        if(deleteMockRequest.getRequestBody() == null) {
+            jsonObject = new JSONObject();
+        }else {
+            jsonObject = new JSONObject(deleteMockRequest.getRequestBody());
+        }
 
         Verifier.verifyMethodAndQuery(
                 deleteMockRequest.getMethod(),
@@ -215,11 +227,12 @@ public class MockServer {
         return null;
     }
 
-    public MockResponse postTypeResponse(ArrayList <String> pathList, JSONObject jsonObject)
+    public MockResponse postTypeResponse(ArrayList <String> pathList, String jsonString)
             throws IllegalArgumentException, ValidationException {
         TreeNode node = findMatch(root, pathList, 0);
         if(node == null) throw new IllegalArgumentException("Directory with this path and payload does not exists!");
-        return node.getResponse(jsonObject);
+        if(jsonString.length() == 0) jsonString = "{}";
+        return node.getResponse(new JSONObject(jsonString));
     }
 
 

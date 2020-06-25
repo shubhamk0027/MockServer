@@ -55,13 +55,6 @@
             <version>20180130</version>
         </dependency>
 
-        <!--  Redisson FOR Redis     -->
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
-            <version>3.10.4</version>
-        </dependency>
-
         <!--  For JSONObject check -->
         <dependency>
             <groupId>org.skyscreamer</groupId>
@@ -77,6 +70,11 @@
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

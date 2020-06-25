@@ -35,7 +35,6 @@ public class ServiceFactory {
     // Persistence via Appender
     private static final Logger appender = LoggerFactory.getLogger("OperationsLogger");
     private static final Logger logger = LoggerFactory.getLogger(ServiceFactory.class);
-
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final int KEY_LEN = 64;
 
@@ -70,7 +69,6 @@ public class ServiceFactory {
         isLoading = false;
     }
 
-
     // Load operations from the appender/operations.log file
     public int loadOperations() throws IllegalAccessException, IOException {
         FileInputStream fstream = new FileInputStream("operations.log");
@@ -97,7 +95,6 @@ public class ServiceFactory {
         return total;
     }
 
-
     // since the number of teams will be limited, api key generated will be unique
     public String createKey(String teamName) {
         byte[] bytes = new byte[KEY_LEN / 8];
@@ -106,7 +103,6 @@ public class ServiceFactory {
         logger.info("Key generated for team: " + teamName + " = " + key);
         return key;
     }
-
 
     /**
      * Admin Function Operation 1 Create Team Query
@@ -141,10 +137,9 @@ public class ServiceFactory {
         }
 
         TeamQuery teamQuery = mapper.readValue(body, TeamQuery.class);
-
         // teamName verification
-        for(int i=0;i<teamQuery.getTeamName().length();i++) {
-            if(i==0 && !Character.isAlphabetic(teamQuery.getTeamName().charAt(i))){
+        for(int i = 0; i < teamQuery.getTeamName().length(); i++) {
+            if(i == 0 && !Character.isAlphabetic(teamQuery.getTeamName().charAt(i))) {
                 throw new IllegalArgumentException("Team name should start with an alphabet!");
             }else if(!Character.isLetterOrDigit(teamQuery.getTeamName().charAt(i))) {
                 throw new IllegalArgumentException("Team Name can not contain special characters!");
@@ -162,7 +157,6 @@ public class ServiceFactory {
         appender.info("+T " + apiKey + " " + teamQuery.getTeamName() + " " + teamQuery.getPassword());
         return apiKey;
     }
-
 
     /**
      * Admin Operation 2-> Delete a team
@@ -188,7 +182,6 @@ public class ServiceFactory {
         if(!isLoading) appender.info("-T " + mapper.writeValueAsString(teamQuery));
     }
 
-
     /**
      * Admin Operation 3 ->  Get the Api Key
      *
@@ -198,6 +191,7 @@ public class ServiceFactory {
      * @throws JsonProcessingException Wrong Query Format
      */
     public String getApiKey(String body) throws IllegalAccessException, JsonProcessingException {
+
         TeamQuery teamQuery = mapper.readValue(body, TeamQuery.class);
 
         if(!nameTeamMap.containsKey(teamQuery.getTeamName()))
@@ -210,7 +204,6 @@ public class ServiceFactory {
         return nameTeamMap.get(teamQuery.getTeamName()).getTeamKey();
     }
 
-
     /**
      * Admin Operation 4-> Add a schema
      *
@@ -219,13 +212,15 @@ public class ServiceFactory {
      * @throws IllegalAccessException  Wrong API key
      */
     public void addSchema(String body) throws JsonProcessingException, IllegalAccessException {
+
         MockSchemaQuery mockSchemaQuery = mapper.readValue(body, MockSchemaQuery.class);
+
         if(!keyTeamMap.containsKey(mockSchemaQuery.getMockSchema().getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
         keyTeamMap.get(mockSchemaQuery.getMockSchema().getTeamKey()).getMockServer().addSchema(mockSchemaQuery);
+
         if(!isLoading) appender.info("+S " + mapper.writeValueAsString(mockSchemaQuery));
     }
-
 
     /**
      * Admin Operation 5-> Add a Mock Query
@@ -235,13 +230,15 @@ public class ServiceFactory {
      * @throws IllegalAccessException  Wrong API key
      */
     public void addMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
+
         MockQuery mockQuery = mapper.readValue(body, MockQuery.class);
+
         if(!keyTeamMap.containsKey(mockQuery.getMockRequest().getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
         keyTeamMap.get(mockQuery.getMockRequest().getTeamKey()).getMockServer().addMockQuery(mockQuery);
+
         if(!isLoading) appender.info("+M " + mapper.writeValueAsString(mockQuery));
     }
-
 
     /**
      * Admin Operation 6-> Get the schema corresponding to a path
@@ -252,7 +249,9 @@ public class ServiceFactory {
      * @throws IllegalAccessException  Wrong API key
      */
     public String getSchema(String body) throws JsonProcessingException, IllegalAccessException {
+
         GetSchemaQuery getSchemaQuery = mapper.readValue(body, GetSchemaQuery.class);
+
         if(!keyTeamMap.containsKey(getSchemaQuery.getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
 
@@ -270,7 +269,6 @@ public class ServiceFactory {
         return keyTeamMap.get(getSchemaQuery.getTeamKey()).getMockServer().getSchema(pathList);
     }
 
-
     /**
      * Admin Operation 7-> Delete a Mock Query
      *
@@ -279,18 +277,31 @@ public class ServiceFactory {
      * @throws IllegalAccessException  Wrong API key
      */
     public void deleteMockQuery(String body) throws JsonProcessingException, IllegalAccessException {
+
         DeleteMockRequest deleteMockRequest = mapper.readValue(body, DeleteMockRequest.class);
+
         if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
         keyTeamMap.get(deleteMockRequest.getTeamKey()).getMockServer().deleteMockRequest(deleteMockRequest);
+
         if(!isLoading) appender.info("-M " + mapper.writeValueAsString(deleteMockRequest)); // compress and write
     }
 
+    /**
+     * Admin Operation 8-> Delete a Mock Query with corresponding payload match
+     *
+     * @param body JSON string of type DeleteMockQuery
+     * @throws JsonProcessingException Wrong Query String
+     * @throws IllegalAccessException  Wrong API key
+     */
     public void deleteAPayload(String body) throws JsonProcessingException, IllegalAccessException {
+
         DeleteMockRequest deleteMockRequest = mapper.readValue(body, DeleteMockRequest.class);
+
         if(!keyTeamMap.containsKey(deleteMockRequest.getTeamKey()))
             throw new IllegalAccessException("You seems to have a wrong API key!");
         keyTeamMap.get(deleteMockRequest.getTeamKey()).getMockServer().deleteAPayloadResponse(deleteMockRequest);
+
         if(!isLoading) appender.info("-P " + mapper.writeValueAsString(deleteMockRequest)); // compress and write
     }
 
@@ -304,11 +315,12 @@ public class ServiceFactory {
      * @throws IllegalAccessException MockResponse does not exists or Wrong API Key
      */
     public MockResponse postTypeResponse(String key, ArrayList <String> pathList, String body) throws IllegalAccessException {
-        logger.info("Received a Post request for key: " + key);
-        if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
-        return keyTeamMap.get(key).getMockServer().postTypeResponse(pathList, new JSONObject(body));
-    }
 
+        logger.info("Received a Post request for key: " + key);
+
+        if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
+        return keyTeamMap.get(key).getMockServer().postTypeResponse(pathList, body);
+    }
 
     /**
      * Fake Server Request Handler for GET Type Request
@@ -319,7 +331,9 @@ public class ServiceFactory {
      * @throws IllegalAccessException MockResponse does not exists or Wrong API Key
      */
     public MockResponse getTypeResponse(String key, ArrayList <String> pathList) throws IllegalAccessException {
+
         logger.info("Received a GET request for key: " + key);
+
         if(!keyTeamMap.containsKey(key)) throw new IllegalAccessException("You seems to have a wrong API key!");
         return keyTeamMap.get(key).getMockServer().getTypeResponse(pathList);
     }
