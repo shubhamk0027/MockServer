@@ -7,6 +7,17 @@ MockServer comes to the rescue by helping you create a fake server that will sen
 1. [Quick Setup](https://github.com/shubhamk0027/MockServer/#1-quick-setup)
 2. [Using via SlackBot](https://github.com/shubhamk0027/MockServer/#2-using-via-slackbot)
 3. [Using MockServer Without Slackbot](https://github.com/shubhamk0027/MockServer/#3-using-mockserver-without-slackbot)
+     
+     - [Create A New Team](https://github.com/shubhamk0027/MockServer/#create-a-new-team)
+     - [Delete A Team](https://github.com/shubhamk0027/MockServer/#delete-a-team)
+     - [Add Mock Query](https://github.com/shubhamk0027/MockServer/#add-mock-query)
+     - [Delete A Payload Response for a Request](https://github.com/shubhamk0027/MockServer/#we-can-also-delete-a-particular-payload-response)
+     - [Delete All Responses on Request](https://github.com/shubhamk0027/MockServer/#delete-all-the-payloads-present-at-this-mockrequest)
+     - [Add a Schema](https://github.com/shubhamk0027/MockServer/#adding-the-schema-again)
+     - [Get Schema](https://github.com/shubhamk0027/MockServer/#find-the-schema-present-at-this-path)
+     - [Get Team Key](https://github.com/shubhamk0027/MockServer/#get-the-team-key)
+     - [Adding Query Parameters](https://github.com/shubhamk0027/MockServer/#we-can-also-have-query-parameters-as)
+
 4. [Performance](https://github.com/shubhamk0027/MockServer/#4-performance)
 
 ## 1. Quick Setup
