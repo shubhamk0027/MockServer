@@ -1,0 +1,25 @@
+### Make sure this team name is unique or remove all the old operations by deleting operations.log file before running tests
+### If you changed the the team name here, make sure to change the team name in other tests file too
+
+### Create a New Team
+POST http://localhost:8080/_admin/_add/_team
+Content-Type: application/json
+
+{
+  "teamName":"Team1",
+  "password":"password1"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+    client.assert(response.status === 200, "Response status is not 200");
+    client.assert(response.body.contains("Your Team Key"))
+});
+%}
+
+### Expected Response
+### Your Team Key dba21e6d48d41835
+
+
+### replace all the old keys with the new team Key
+### Use Ctrl+R for find old key and replace new key

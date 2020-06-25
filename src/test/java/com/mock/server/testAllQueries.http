@@ -7,23 +7,16 @@ Content-Type: application/json
   "password":"password1"
 }
 
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "Team name should start with an alphabet!\n",
+        "Expected: Team name should start with an alphabet! Got "+response.body)
+    });
+%}
+
 ### Expected Response
 ### Team name should start with an alphabet!
-
-
-
-
-### Create a New Team
-POST http://localhost:8080/_admin/_add/_team
-Content-Type: application/json
-
-{
-  "teamName":"Team1",
-  "password":"password1"
-}
-
-### Expected Response
-### Your Team Key ff214a0e08463be2
 
 
 
@@ -36,6 +29,14 @@ Content-Type: application/json
   "teamName":"Team1",
   "password":"password2"
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "Team Name exists. Choose a different Team Name!\n",
+        "Expected: Team Name exists. Choose a different Team Name! Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### Team Name exists. Choose a different Team Name!
@@ -52,6 +53,13 @@ Content-Type: application/json
   "password":"password2"
 }
 
+> {%
+client.test("Request executed successfully", function() {
+    client.assert(response.status === 200, "Response status is not 200");
+    client.assert(response.body.contains("Your Team Key"))
+});
+%}
+
 ### Expected Response
 ### Your Team Key 714813d0003877a3
 
@@ -67,13 +75,21 @@ Content-Type: application/json
   "password":"password1"
 }
 
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "Wrong Password!\n",
+        "Expected: Wrong Password! Got "+response.body)
+    });
+%}
+
 ### Expected Response
 ### Wrong Password!
 
 
 
 
-### Delete Second Team by admin
+### Delete Second Team
 POST http://localhost:8080/_admin/_del/_team
 Content-Type: application/json
 
@@ -81,6 +97,14 @@ Content-Type: application/json
   "teamName":"Team2",
   "password":"password2"
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "Team Deleted Successfully!",
+        "Expected: Team Deleted Successfully! Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### Team Deleted Successfully!
@@ -94,7 +118,7 @@ Content-Type: application/json
 
 {
 	"mockRequest":{
-		"teamKey":"ff214a0e08463be2",
+		"teamKey":"bb1d321530c36c8d",
 		"method":"POST",
 		"path":"/items/electronics/[a-zA-Z]+/details",
         "checkMode": "false",
@@ -110,20 +134,35 @@ Content-Type: application/json
 	}
 }
 
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "MockQuery Added Successfully!",
+        "Expected: MockQuery Added Successfully! Got "+response.body)
+    });
+%}
+
 ### Expected Response
-### MockQuery Added Successfully
+### MockQuery Added Successfully!
 
 
 
 
 ### Test Mock Query
-POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
+POST http://localhost:8080/bb1d321530c36c8d/items/electronics/iphone/details
 Content-Type: application/json
 
 {
   "username":"alex",
   "userId":1234567890
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body.price === "20000",
+        "Price Value Expected: 20000 Got "+response.body.price)
+    });
+%}
 
 ### Expected Response
 ### {"price": "20000"}
@@ -132,12 +171,19 @@ Content-Type: application/json
 
 
 ### Test Mock Query is it lenient?
-POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
+POST http://localhost:8080/bb1d321530c36c8d/items/electronics/iphone/details
 Content-Type: application/json
 
 {
   "userId":1234567890
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body.price === "20000",
+        "Price Value Expected: 20000 Got "+response.body.price)
+    });
+%}
 
 ### Expected Response
 ### {
@@ -152,7 +198,7 @@ Content-Type: application/json
 
 {
 	"mockRequest":{
-		"teamKey":"ff214a0e08463be2",
+		"teamKey":"bb1d321530c36c8d",
 		"method":"POST",
 		"path":"/items/electronics/[a-zA-Z]+/details",
         "checkMode": "true",
@@ -168,18 +214,33 @@ Content-Type: application/json
 	}
 }
 
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "MockQuery Added Successfully!",
+        "Expected: MockQuery Added Successfully! Got "+response.body)
+    });
+%}
+
 ### Expected Response
 ### MockQuery Added Successfully
 
 
 ### Test MockQuery
-POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
+POST http://localhost:8080/bb1d321530c36c8d/items/electronics/iphone/details
 Content-Type: application/json
 
 {
   "username":"missy",
   "userId":1234567890
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body.price === "20000",
+        "Price Value Expected: 20000 Got "+response.body.price)
+    });
+%}
 
 ### Expected Response
 ### {
@@ -194,11 +255,18 @@ POST http://localhost:8080/_admin/_del/_payload
 Content-Type: application/json
 
 {
-  "teamKey":"ff214a0e08463be2",
+  "teamKey":"bb1d321530c36c8d",
   "method":"POST",
   "path":"/items/electronics/[a-zA-Z]+/details",
   "requestBody":"{\"username\":\"missy\",\"userId\":1234567890}"
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "Payload And Response Deleted Successfully!",
+        "Expected: Payload And Response Deleted Successfully! Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### Payload And Response Deleted Successfully!
@@ -207,13 +275,20 @@ Content-Type: application/json
 
 
 ### Test DeleteMockRequest
-POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphone/details
+POST http://localhost:8080/bb1d321530c36c8d/items/electronics/iphone/details
 Content-Type: application/json
 
 {
   "username":"missy",
   "userId":1234567890
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "No matching payload found!\n",
+        "Expected: No matching payload found! Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### No matching payload found!
@@ -227,7 +302,7 @@ Content-Type: application/json
 
 {
   "mockSchema":{
-    "teamKey":"ff214a0e08463be2",
+    "teamKey":"bb1d321530c36c8d",
     "method":"POST",
     "jsonSchema":"{\"properties\":{\"username\":{\"type\":\"string\"},\"userId\":{\"type\":\"number\"}}}",
     "path":"/items/electronics/[a-zA-Z]+/details"
@@ -241,6 +316,13 @@ Content-Type: application/json
   }
 }
 
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "A payload response List is also attached to this path, try deleting the payload List at his path and then continue!\n",
+        "Expected: A payload response List is also attached to this path, try deleting the payload List at his path and then continue! Got "+response.body)
+    });
+%}
+
 ### Expected Response
 ### A payload response List is also attached to this path, try deleting the payload List at his path and then continue!
 
@@ -251,10 +333,17 @@ POST http://localhost:8080/_admin/_del/_mock
 Content-Type: application/json
 
 {
-  "teamKey":"ff214a0e08463be2",
+  "teamKey":"bb1d321530c36c8d",
   "method":"POST",
   "path":"/items/electronics/[a-zA-Z]+/details"
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "MockQuery/MockSchema Deleted Successfully!",
+        "Expected: MockQuery/MockSchema Deleted Successfully! Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### MockQuery/MockSchema Deleted Successfully!
@@ -267,19 +356,27 @@ Content-Type: application/json
 
 {
   "mockSchema":{
-    "teamKey":"ff214a0e08463be2",
+    "teamKey":"bb1d321530c36c8d",
     "method":"POST",
     "jsonSchema":"{\"properties\":{\"username\":{\"type\":\"string\"},\"userId\":{\"type\":\"number\"}}}",
     "path":"/items/electronics/[a-zA-Z]+/details"
   },
   "mockResponse":{
     "statusCode":200,
-    "responseBody":"{\"price\":\"2000\"}",
+    "responseBody":"{\"price\":\"20000\"}",
     "headers":{
-      "browser":"mozilla"
+      "browser":"mozilla",
+      "Content-Type": "application/json"
     }
   }
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "Schema Added Successfully!",
+        "Expected: Schema Added Successfully! Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### Schema Added Successfully!
@@ -288,13 +385,20 @@ Content-Type: application/json
 
 
 ### Test the schema - Validation Error
-POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphonePlus/details
+POST http://localhost:8080/bb1d321530c36c8d/items/electronics/iphonePlus/details
 Content-Type: application/json
 
 {
   "username":"alex",
   "userId":"1234567890"
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "#/userId: expected type: Number, found: String\n",
+        "Expected: ##/userId: expected type: Number, found: String Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### #/userId: expected type: Number found: String
@@ -303,13 +407,20 @@ Content-Type: application/json
 
 
 ### Test the schema - Successfull request Validation
-POST http://localhost:8080/ff214a0e08463be2/items/electronics/iphonePlus/details
+POST http://localhost:8080/bb1d321530c36c8d/items/electronics/iphonePlus/details
 Content-Type: application/json
 
 {
   "username":"alex",
   "userId":1234567890
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body.price === "20000",
+        "Price Value Expected: 20000 Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### {
@@ -324,10 +435,18 @@ POST http://localhost:8080/_admin/_get/_schema
 Content-Type: application/json
 
 {
-  "teamKey":"ff214a0e08463be2",
+  "teamKey":"bb1d321530c36c8d",
   "method":"POST",
   "path":"/items/electronics/iphone11/details"
 }
+
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "This path does not exists!\n",
+        "Expected: This path does not exists! Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### Path does not exists!
@@ -341,10 +460,17 @@ POST http://localhost:8080/_admin/_get/_schema
 Content-Type: application/json
 
 {
-  "teamKey":"ff214a0e08463be2",
+  "teamKey":"bb1d321530c36c8d",
   "method":"POST",
   "path":"/items/electronics/iphoneElevenPro/details"
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body === "{\"properties\":{\"userId\":{\"type\":\"number\"},\"username\":{\"type\":\"string\"}}}",
+        "Expected: {\"properties\":{\"userId\":{\"type\":\"number\"},\"username\":{\"type\":\"string\"}}} Got "+response.body)
+    });
+%}
 
 ### Expected Response
 ### {"properties":{"userId":{"type":"number"},"username":{"type":"string"}}}
@@ -361,8 +487,15 @@ Content-Type: application/json
   "password":"password1"
 }
 
+> {%
+client.test("Request executed successfully", function() {
+    client.assert(response.status === 200, "Response status is not 200");
+    client.assert(response.body.contains("Your Team Key"))
+});
+%}
+
 ### Expected Response
-### Your Team Key ff214a0e08463be2
+### Your Team Key bb1d321530c36c8d
 
 
 
@@ -373,7 +506,7 @@ Content-Type: application/json
 
 {
   "mockRequest":{
-    "teamKey":"ff214a0e08463be2",
+    "teamKey":"bb1d321530c36c8d",
     "method":"GET",
     "path":"/items/grocery/details",
     "queryParameters": "?name=alex"
@@ -388,6 +521,14 @@ Content-Type: application/json
   }
 }
 
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "MockQuery Added Successfully!",
+        "Expected: MockQuery Added Successfully! Got "+response.body)
+    });
+%}
+
 ### Expected Response
 ### MockQuery Added Successfully!
 
@@ -395,7 +536,15 @@ Content-Type: application/json
 
 
 ### Test the added Mock
-GET http://localhost:8080/ff214a0e08463be2/items/grocery/details?name=alex
+GET http://localhost:8080/bb1d321530c36c8d/items/grocery/details?name=alex
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body.price === "50000",
+        "Price Value Expected: 50000 Got "+response.body)
+    });
+%}
+
 ### Expected Response
 ### {
 ###  "price": "50000"
@@ -409,7 +558,7 @@ Content-Type: application/json
 
 {
   "mockRequest":{
-    "teamKey":"ff214a0e08463be2",
+    "teamKey":"bb1d321530c36c8d",
     "method":"GET",
     "path":"/items/grocery/details",
     "queryParametersRegex": "?name=[a-zA-Z]+&id=[0-9]+"
@@ -424,6 +573,14 @@ Content-Type: application/json
   }
 }
 
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body ===
+        "MockQuery Added Successfully!",
+        "Expected: MockQuery Added Successfully! Got "+response.body)
+    });
+%}
+
 ### Expected Response
 ### MockQuery Added Successfully!
 
@@ -431,7 +588,15 @@ Content-Type: application/json
 
 
 ### Test the added Mock
-GET http://localhost:8080/ff214a0e08463be2/items/grocery/details?name=missy&id=123
+GET http://localhost:8080/bb1d321530c36c8d/items/grocery/details?name=missy&id=123
+
+> {%
+    client.test("Request executed successfully", function() {
+    client.assert(response.body.info === "All Set!",
+        "Price Value Expected: All Set! Got "+response.body.info)
+    });
+%}
+
 ### Expected Response
 ### {
 ###  "info": "All Set!"
