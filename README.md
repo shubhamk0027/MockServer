@@ -563,6 +563,8 @@ How the tests are generated is shown [here](https://github.com/shubhamk0027/Mock
 
 12. Add all the opeartions you have performed on the mockserver in a separate request.http file, so that you can keep track of the old and new queries well. As shown [here](https://github.com/shubhamk0027/MockServer/blob/localDb/src/test/java/com/mock/server/httpTest.http)
 
+13. For methods like GET not supporting any payload, the payload if given will be ignored. And for methods like POST,if not payload is provided, it will be automatically substituted with and empty payload "{}"
+
 
 ## Also, as of now
 
