@@ -3,6 +3,10 @@ Have your team's development stopped because of the limits or the cost on the nu
 
 MockServer comes to the rescue by helping you create a fake server that will send fake responses to your application for fastening the development process, and easing the testing process while verifying your http/https requests and sending the response you desire for that particular request.
 
+See in Action: [Without SlackBot](https://drive.google.com/file/d/1YztS8Q_kyiwyOV3RO33fOaHBtCNhCbIz/view?usp=sharing)
+
+See in Action: [With SlackBot](https://drive.google.com/file/d/1acPSNjV7H-BZ-QoYnc-DZcq1fMGvQ8Cx/view?usp=sharing)
+
 ## Contents
 1. [Quick Setup](https://github.com/shubhamk0027/MockServer/#1-quick-setup)
 2. [Using via SlackBot](https://github.com/shubhamk0027/MockServer/#2-using-via-slackbot)
@@ -39,7 +43,7 @@ with payloads if any. Change localhost:8080 to the address where your mockserver
 
 ## 2. Using via SlackBot
 
-See the slackbot in [action](https://drive.google.com/file/d/1sk_VV9kycOtOwtN3ikzgRYGEuvOwv5BT/view?usp=sharing) to understand how to use it. Simply run the following slash commands in the slack. A dialog box will appear asking for the Http request details and the corresponding response parameters to return. More details on what to fill in the input boxes of the dialog can be understood by understading the json the mock server accepts. See the examples in [Using Mockserver Without SlackBot](https://github.com/shubhamk0027/MockServer/#3-using-mockserver-without-slackbot).
+Simply run the following slash commands in the slack. A dialog box will appear asking for the Http request details and the corresponding response parameters to return. More details on what to fill in the input boxes of the dialog can be understood by understading the json the mock server accepts. See the examples in [Using Mockserver Without SlackBot](https://github.com/shubhamk0027/MockServer/#3-using-mockserver-without-slackbot).
 
 #### /addteam
 
