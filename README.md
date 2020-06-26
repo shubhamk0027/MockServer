@@ -22,17 +22,17 @@ MockServer comes to the rescue by helping you create a fake server that will sen
 
 ## 1. Quick Setup
 
-First, run this mock server. By default it runs on localhost:8080.
+If you want to have your own server then, run this mock server. By default it runs on localhost:8080. Otherwise you can use a running mockserver instance at http://mocksrvr.herokuapp.com/
 
-After that, you can either send your queries directly or using the Slack bot. To use via Slack bot, run [slackbot](https://github.com/shubhamk0027/SlackBot) after adding bearer token and slack client token and the address where the mock server is running in the environment parameters as
+You can either send your queries directly or using the Slack bot. To use via Slack bot, run [slackbot](https://github.com/shubhamk0027/SlackBot) after adding bearer token and slack client token and the address where the mock server is running in the environment parameters as
 
         SLACK_BOT_TOKEN=FULL_TOKEN_HERE 
         SLACK_SIGNING_SECRET=SIGNING_SECRET_HERE 
-        MOCK_SERVER=localhost:8080
+        MOCK_SERVER=mocksrvr.herokuapp.com
 
 Now you can send your add/delete mock queries to the mock server via the slackbot dialogs or via sending the json request without the slackbot directly. Whichever way you use, you can get the response set up by you for a particular request url, by sending that request to mockserver as 
         
-        http//localhost:8080/TEAM-SECRET-KEY/your/path/here?any=query&parameters
+       http://mocksrvr.herokuapp.com/TEAM-SECRET-KEY/your/path/here?any=query&parameters
         
 with payloads if any. Change localhost:8080 to the address where your mockserver is running.
 
@@ -47,7 +47,7 @@ To create a new team. It will provide you with a secret team token. This secret 
 
 #### /delteam
 
-To delete a team. Only the admin, the user who created the team can delete a team.
+To delete a team. Only the admin, the user who created the team can delete a team. An admin has a secret password.
 
 #### /addschema
 
@@ -80,7 +80,7 @@ Send you queries as the server, with the appropriate JSON. The following example
 
 After creating the team, you will be provided with the Team Secret API Key, that you can share with your team. And will be required while adding/deleting the mockqueries. 
 
-        POST http://localhost:8080/_admin/_add/_team
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_team
         Content-Type: application/json
 
         {
@@ -96,7 +96,7 @@ After creating the team, you will be provided with the Team Secret API Key, that
 
 #### Create another team with a different name
 
-        POST http://localhost:8080/_admin/_add/_team
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_team
         Content-Type: application/json
 
         {
@@ -112,7 +112,7 @@ After creating the team, you will be provided with the Team Secret API Key, that
 
 #### Delete a team
 
-        POST http://localhost:8080/_admin/_del/_team
+        POST http://mocksrvr.herokuapp.com/_admin/_del/_team
         Content-Type: application/json
 
         {
@@ -129,7 +129,7 @@ After creating the team, you will be provided with the Team Secret API Key, that
 #### Add Mock Query 
 Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching the json requestBody. You can read more about it [here](https://github.com/skyscreamer/JSONassert). STRICT MODE matches all fields order of arrays and no additional fields allowed, and ONLY_MATCHING_FIELDS/LENIENT MODE which only matches fields provided in the request matcher
 
-        POST http://localhost:8080/_admin/_add/_mock
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_mock
         Content-Type: application/json
 
         {
@@ -158,7 +158,7 @@ Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching
 
 #### Test Mock Query
 
-        POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+        POST http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
         {
@@ -174,7 +174,7 @@ Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching
 
 #### Test Mock Query, Is the checks lenient?
 
-        POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+        POST http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
         {
@@ -190,7 +190,7 @@ Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching
 
 #### Add another Mock Query on the same path but with a different payload
 
-        POST http://localhost:8080/_admin/_add/_mock
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_mock
         Content-Type: application/json
 
         {
@@ -217,7 +217,7 @@ Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching
 
 #### Test MockQuery
 
-        POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+        POST http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
         {
@@ -235,7 +235,7 @@ Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching
 
 #### We can also delete a particular payload response
 
-        POST http://localhost:8080/_admin/_del/_payload
+        POST http://mocksrvr.herokuapp.com/_admin/_del/_payload
         Content-Type: application/json
 
         {
@@ -253,7 +253,7 @@ Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching
 
 #### Test the Delete MockRequest
 
-        POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphone/details
+        POST http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/electronics/iphone/details
         Content-Type: application/json
 
         {
@@ -271,7 +271,7 @@ Here, note that the checkMode is false(Lenient). It uses JSONAssert for matching
 
 This is not allowed, a request supporting a payload can have either a schema check, or a List of Payloads to be matched with. You have to delete the payloads present at the old path and then add the schema.
 
-        POST http://localhost:8080/_admin/_add/_schema
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_schema
         Content-Type: application/json
 
         {
@@ -298,7 +298,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Delete all the payloads present at this mockrequest.
 
-        POST http://localhost:8080/_admin/_del/_mock
+        POST http://mocksrvr.herokuapp.com/_admin/_del/_mock
         Content-Type: application/json
 
         {
@@ -314,7 +314,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Adding the schema again
 
-        POST http://localhost:8080/_admin/_add/_schema
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_schema
         Content-Type: application/json
 
         {
@@ -341,7 +341,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Test the schema - Validation Error
 
-        POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
+        POST http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/electronics/iphonePlus/details
         Content-Type: application/json
 
         {
@@ -357,7 +357,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Test the schema - Successfull requestBody validation
 
-        POST http://localhost:8080/ca72678b69c3c1ed/items/electronics/iphonePlus/details
+        POST http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/electronics/iphonePlus/details
         Content-Type: application/json
 
         {
@@ -375,7 +375,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Find the schema present at this path
 
-        POST http://localhost:8080/_admin/_get/_schema
+        POST http://mocksrvr.herokuapp.com/_admin/_get/_schema
         Content-Type: application/json
 
         {
@@ -393,7 +393,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Find the schema present at this path
 
-        POST http://localhost:8080/_admin/_get/_schema
+        POST http://mocksrvr.herokuapp.com/_admin/_get/_schema
         Content-Type: application/json
 
         {
@@ -410,7 +410,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Get the team key
 
-        POST http://localhost:8080/_admin/_get/_key
+        POST http://mocksrvr.herokuapp.com/_admin/_get/_key
         Content-Type: application/json
 
         {
@@ -426,7 +426,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### We can also have query parameters as
 
-        POST http://localhost:8080/_admin/_add/_mock
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_mock
         Content-Type: application/json
 
         {
@@ -454,7 +454,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Test the added Mock Query
 
-        GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=alex
+        GET http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/grocery/details?name=alex
         ### Expected Response
         ### {
         ###  "price": "50000"
@@ -464,7 +464,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Using query parameters as a regex
 
-        POST http://localhost:8080/_admin/_add/_mock
+        POST http://mocksrvr.herokuapp.com/_admin/_add/_mock
         Content-Type: application/json
 
         {
@@ -492,7 +492,7 @@ This is not allowed, a request supporting a payload can have either a schema che
 
 #### Test the added Mock Query
 
-        GET http://localhost:8080/ca72678b69c3c1ed/items/grocery/details?name=missy&id=123
+        GET http://mocksrvr.herokuapp.com/ca72678b69c3c1ed/items/grocery/details?name=missy&id=123
         ### Expected Response
         ### {
         ###  "info": "All Set!"
